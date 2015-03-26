@@ -44,6 +44,10 @@ public class DBService {
                     String cookies = resultSet.getString("cookies");
                     String type = resultSet.getString("type");
                     long id = resultSet.getLong("id");
+                    String parameters = resultSet.getString("parameters");
+                    boolean recursive = resultSet.getBoolean("recursive");
+                    String parseRegex = resultSet.getString("parseRegex");
+                    String subTaskJson = resultSet.getString("subTaskJson");
 
                     Task task = new Task();
                     task.setName(taskName);
@@ -52,6 +56,10 @@ public class DBService {
                     task.setCookie(cookies);
                     task.setHeaderJson(headers);
                     task.setType(TaskType.valueOf(type));
+                    task.setParameterJson(parameters);
+                    task.setRecursive(recursive);
+                    task.setParseRegex(parseRegex);
+                    task.setSubTaskJson(subTaskJson);
                     tasks.add(task);
                 }
             }
@@ -61,7 +69,7 @@ public class DBService {
     }
 
     public static void insertTasks(Connection connection, List<Task> tasks) throws SQLException {
-        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type) VALUES(?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
         for (Task task : tasks) {
             try (PreparedStatement psmt = connection.prepareStatement(sql)) {
                 psmt.setString(1, task.getName());
@@ -71,6 +79,9 @@ public class DBService {
                 psmt.setString(5, task.getParameterJson());
                 psmt.setString(6, task.refer);
                 psmt.setString(7, task.getType().toString());
+                psmt.setBoolean(8, task.isRecursive());
+                psmt.setString(9, task.getParseRegex());
+                psmt.setString(10, task.getSubTaskJson());
                 psmt.executeUpdate();
             }
         }

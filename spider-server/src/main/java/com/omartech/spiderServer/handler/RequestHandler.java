@@ -121,7 +121,8 @@ public class RequestHandler extends AbstractHandler {
         if (!folder.exists()) {
             folder.mkdirs();
         }
-        String newFileName = System.currentTimeMillis() + "";
+
+        String newFileName = System.currentTimeMillis() + "." + fileName + ".store";
         File uploadedFile = new File("spider-server-store/" + newFileName);
         item.write(uploadedFile);
 

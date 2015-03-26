@@ -16,11 +16,20 @@ struct Task{//具体抓取任务
   4: string cookie,
   5: string refer,
   6: TaskType type = TaskType.Get,
-  7: string localStoreFile,
-  8: bool useProxy,
+  8: bool useProxy = false,
   9: string name,
   10: string parameterJson,//json for map<string, string>
   11: string parseRegex,//解析当前页中的链接，并返回该内容页
+  12: bool recursive = false,//如果是true，则继续抓取parseRegex中的链接
+  13: string subTaskJson,//子任务
+}
+struct SubTask{//都不是必填
+  1: string headerJson,
+  2: string cookie,
+  3: string url,
+  4: i64 taskId,
+  5: bool useProxy = false,
+
 }
 
 struct TaskResponse{//从服务端获取回的任务

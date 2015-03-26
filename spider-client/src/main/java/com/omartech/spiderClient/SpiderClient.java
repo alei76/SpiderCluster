@@ -28,8 +28,8 @@ public class SpiderClient {
     @Option(name = "-p", usage = "-p set the port")
     private int port = 7154;
 
-    @Option(name = "-d", usage = "-d set the default dir folder")
-    private String dir;
+    @Option(name = "-d", usage = "-d set the default localstore folder")
+    private String localstore = "localstore";
 
     @Option(name = "-t", usage = "-t set the time span of loop, default = 5 min")
     private int timeSpan = 5;
@@ -46,10 +46,18 @@ public class SpiderClient {
             logger.info("client runs with args blow:");
             logger.info("port : {}", port);
             logger.info("server : {}", server);
-            logger.info("savefolder : {}", dir);
+            logger.info("savefolder : {}", localstore);
             logger.info("timeSpan : {}min", timeSpan);
             logger.info("=============================");
-
+            File folder = new File(localstore);
+            if (folder.exists()) {
+                if (!folder.isDirectory()) {
+                    FileUtils.deleteQuietly(folder);
+                    folder.mkdirs();
+                }
+            } else {
+                folder.mkdirs();
+            }
             run();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -60,7 +68,6 @@ public class SpiderClient {
 
 
     String localTaskFile = "__spider-client__task";
-    String localStoreFile = "__spider-client__store";
 
     TaskMonitor taskMonitor = new TaskMonitor(server, port);
 
@@ -75,7 +82,10 @@ public class SpiderClient {
             if (file.exists()) {
                 String old = FileUtils.readFileToString(file);
                 TaskResponse taskLeft = gson.fromJson(old, TaskResponse.class);
-                FileUtils.deleteQuietly(new File(localStoreFile));//删掉未完成的那部分
+                for (File tmp : new File(localstore).listFiles()) {
+                    FileUtils.deleteQuietly(tmp);//删掉未完成的那部分
+                }
+
                 logger.info("some task is left");
                 consumeTaskResponse(taskLeft);
                 logger.info("task left if over");
@@ -101,14 +111,14 @@ public class SpiderClient {
 
             recordTask(response);
             for (Task task : tasks) {
-                task.setLocalStoreFile(localStoreFile);
-                new SpiderWorker(task).run();
+                new SpiderWorker(task, localstore).run();
             }
             logger.info("task size : {}, finish", response.getTasksSize());
+
             FileUtils.deleteQuietly(new File(localTaskFile));
-            File localstore = new File(localStoreFile);
-            if (localstore.exists()) {
-                TaskResults taskResults = new TaskResults(localstore);
+            File folder = new File(localstore);
+            for (File tmp : folder.listFiles()) {
+                TaskResults taskResults = new TaskResults(tmp);
                 boolean flag = false;
                 do {
                     flag = taskMonitor.sendResults(taskResults);
@@ -117,10 +127,9 @@ public class SpiderClient {
                         Thread.sleep(timeSpan * 1000 * 60);
                     } else {
                         logger.info("数据发送完毕, 删掉文件");
-                        FileUtils.deleteQuietly(localstore);
+                        FileUtils.deleteQuietly(tmp);
                     }
                 } while (!flag);
-
             }
         }
     }

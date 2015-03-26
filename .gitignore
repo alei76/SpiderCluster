@@ -7,3 +7,4 @@
 target/
 gen-java/
 spider-server-store/
+__spider-client__task
