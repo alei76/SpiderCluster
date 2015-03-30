@@ -1,6 +1,7 @@
 package com.omartech.spiderHandler.seed;
 
 import cn.omartech.spider.gen.Task;
+import com.google.gson.Gson;
 import com.omartech.spiderServer.DBService;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.kohsuke.args4j.CmdLineException;
@@ -21,10 +22,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by OmarTech on 15-3-27.
  */
-public class ASeedWorker {
+public abstract class ASeedWorker {
 
     @Option(name = "-dbp", usage = "-dbp set the database ip and port, like 127.0.0.1:3306")
-    String dbIpAndPort = "127.0.0.1:3306";
+    String dbIpAndPort = "10.1.0.171:3311";
     @Option(name = "-u", usage = "-p set the database username")
     String username = "root";
     @Option(name = "-pw", usage = "-p set the database password")
@@ -32,7 +33,9 @@ public class ASeedWorker {
 
     private static Logger logger = LoggerFactory.getLogger(ASeedWorker.class);
 
-    public void domain(String[] args) {
+    public abstract void prepare();
+
+    public void run(String[] args) {
 
         CmdLineParser parser = new CmdLineParser(this);
         try {
@@ -47,19 +50,45 @@ public class ASeedWorker {
         logger.info("database username : {}", username);
         logger.info("database password : {}", password);
         logger.info("============================");
-        run();
+        prepare();
+        beginToWork();
     }
 
-    private List<BigTask> tasks = new ArrayList<>();
+    private List<SeedTask> tasks = new ArrayList<>();
 
 
-    public void addTask(Task task, int timespan, TimeUnit timeUnit) {
-        BigTask bigTask = new BigTask(task, timespan, timeUnit);
+    private void addScheduleTask(SchedulateTask schedulateTask) {
+        SchedulateTask bigTask = new SchedulateTask(schedulateTask.task, schedulateTask.timespan, schedulateTask.timeUnit);
         tasks.add(bigTask);
     }
 
+    private void addOnceTask(OnceTask onceTask) {
+        OnceTask bigTask = new OnceTask(onceTask.task);
+        tasks.add(bigTask);
+    }
 
-    private void run() {
+    public void addSeedTasks(List<SeedTask> tasks) {
+        for (SeedTask seedTask : tasks) {
+            if (seedTask instanceof SchedulateTask) {
+                SchedulateTask schedulateTask = (SchedulateTask) seedTask;
+                addScheduleTask(schedulateTask);
+            } else if (seedTask instanceof OnceTask) {
+                OnceTask onceTask = (OnceTask) seedTask;
+                addOnceTask(onceTask);
+            } else {
+                logger.error("wrong task type");
+            }
+        }
+    }
+
+
+    Gson gson = new Gson();
+
+    private void beginToWork() {
+        if (tasks.size() == 0) {
+            logger.info("no seedwork in the list.");
+            return;
+        }
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setUrl("jdbc:mysql://" + dbIpAndPort + "/spidercluster");
         dataSource.setUsername(username);
@@ -72,8 +101,14 @@ public class ASeedWorker {
 
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
-        for (BigTask bigTask : tasks) {
-            service.scheduleAtFixedRate(new SeedRunner(bigTask.task, dataSource), 1, bigTask.timespan, bigTask.timeUnit);
+        for (SeedTask bigTask : tasks) {
+            if (bigTask instanceof SchedulateTask) {
+                SchedulateTask schedulateTask = (SchedulateTask) bigTask;
+                service.scheduleAtFixedRate(new SeedRunner(schedulateTask.task, dataSource), 1, schedulateTask.timespan, schedulateTask.timeUnit);
+            } else if (bigTask instanceof OnceTask) {
+                OnceTask onceTask = (OnceTask) bigTask;
+                service.submit(new SeedRunner(onceTask.task, dataSource));
+            }
         }
     }
 
@@ -97,13 +132,24 @@ public class ASeedWorker {
         }
     }
 
+    interface SeedTask {
 
-    private class BigTask {
+    }
+
+    class OnceTask implements SeedTask {
+        Task task;
+
+        public OnceTask(Task tas) {
+            this.task = tas;
+        }
+    }
+
+    class SchedulateTask implements SeedTask {
         Task task;
         int timespan;
         TimeUnit timeUnit;
 
-        public BigTask(Task task, int timespan, TimeUnit timeUnit) {
+        public SchedulateTask(Task task, int timespan, TimeUnit timeUnit) {
             this.task = task;
             this.timespan = timespan;
             this.timeUnit = timeUnit;

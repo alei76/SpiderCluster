@@ -44,6 +44,8 @@ public class RequestHandler extends AbstractHandler {
 
     private String storeDir;
 
+    private int batchSize = 100;
+
     public RequestHandler(DataSource dataSource, String storeDir) {
         this.dataSource = dataSource;
         this.storeDir = storeDir;
@@ -134,7 +136,7 @@ public class RequestHandler extends AbstractHandler {
         }
 
         String newFileName = System.currentTimeMillis() + "." + fileName + ".store";
-        File uploadedFile = new File("spider-server-store/" + newFileName);
+        File uploadedFile = new File(storeDir + File.separator + newFileName);
         item.write(uploadedFile);
 
         List<String> lines = FileUtils.readLines(uploadedFile);
@@ -159,7 +161,7 @@ public class RequestHandler extends AbstractHandler {
         //find tasks in the db limit 100
         List<Task> tasks = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            tasks = DBService.findTasks(connection, 0, 10);
+            tasks = DBService.findTasks(connection, 0, batchSize);
         }
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setTasks(tasks);
@@ -206,7 +208,7 @@ public class RequestHandler extends AbstractHandler {
         writer.write("</td>");
         writer.write("</tr>");
         for (StatusModel model : models) {
-            logger.info(model.toString());
+//            logger.info(model.toString());
             writer.write("<tr>");
             writer.write("<td>");
             writer.write(model.getIp());

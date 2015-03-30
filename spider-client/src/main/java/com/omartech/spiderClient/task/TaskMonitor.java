@@ -53,7 +53,6 @@ public class TaskMonitor {
         post.setEntity(reqEntity);
 
         try {
-
             HttpResponse response = client.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
             switch (statusCode) {

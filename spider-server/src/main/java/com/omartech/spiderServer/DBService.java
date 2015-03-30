@@ -31,7 +31,7 @@ public class DBService {
 
     public static List<Task> findTasks(Connection connection, int offset, int limit) throws SQLException {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM tasks LIMIT ?, ?";
+        String sql = "SELECT * FROM tasks WHERE currentStatus = 0 LIMIT ?, ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
             preparedStatement.setInt(1, offset);
             preparedStatement.setInt(2, limit);
