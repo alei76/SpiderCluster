@@ -13,6 +13,7 @@
     <modules>
         <module>spider-server</module>
         <module>spider-client</module>
+        <module>spider-handler</module>
     </modules>
 
 

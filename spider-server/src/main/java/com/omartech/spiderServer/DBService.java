@@ -69,21 +69,25 @@ public class DBService {
     }
 
     public static void insertTasks(Connection connection, List<Task> tasks) throws SQLException {
-        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
         for (Task task : tasks) {
-            try (PreparedStatement psmt = connection.prepareStatement(sql)) {
-                psmt.setString(1, task.getName());
-                psmt.setString(2, task.getUrl());
-                psmt.setString(3, task.getCookie());
-                psmt.setString(4, task.getHeaderJson());
-                psmt.setString(5, task.getParameterJson());
-                psmt.setString(6, task.refer);
-                psmt.setString(7, task.getType().toString());
-                psmt.setBoolean(8, task.isRecursive());
-                psmt.setString(9, task.getParseRegex());
-                psmt.setString(10, task.getSubTaskJson());
-                psmt.executeUpdate();
-            }
+            insertTask(connection, task);
+        }
+    }
+
+    public static void insertTask(Connection connection, Task task) throws SQLException {
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
+        try (PreparedStatement psmt = connection.prepareStatement(sql)) {
+            psmt.setString(1, task.getName());
+            psmt.setString(2, task.getUrl());
+            psmt.setString(3, task.getCookie());
+            psmt.setString(4, task.getHeaderJson());
+            psmt.setString(5, task.getParameterJson());
+            psmt.setString(6, task.refer);
+            psmt.setString(7, task.getType().toString());
+            psmt.setBoolean(8, task.isRecursive());
+            psmt.setString(9, task.getParseRegex());
+            psmt.setString(10, task.getSubTaskJson());
+            psmt.executeUpdate();
         }
     }
 }

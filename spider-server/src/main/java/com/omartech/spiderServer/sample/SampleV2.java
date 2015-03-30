@@ -30,7 +30,7 @@ public class SampleV2 {
         headerMap.put("Accept-Encoding", "gzip,deflate,sdch");
         headerMap.put("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.6");
         headerMap.put("Cache-Control", "max-age=0");
-        headerMap.put("Connection", "keep-alive");
+        headerMap.put("Connection", "close");
         headerMap.put("Host", "roll.finance.sina.com.cn");
         headerMap.put("Referer",
                 "http://roll.finance.sina.com.cn/finance/sh2/xfylc-bgt/index_1.shtml");

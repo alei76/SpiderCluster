@@ -1,4 +1,4 @@
-package com.omartech.spiderServer;
+package com.omartech.spiderHandler.parser;
 
 import cn.omartech.spider.gen.HtmlObject;
 import com.google.gson.Gson;
@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by OmarTech on 15-3-18.
  */
-public class BatchParser {
+public abstract class ABatchParser {
 
-    static Logger logger = LoggerFactory.getLogger(BatchParser.class);
+    static Logger logger = LoggerFactory.getLogger(ABatchParser.class);
 
     @Option(name = "-d", usage = "-d set the default dir")
     private String folder = "spider-server-store";
@@ -46,13 +46,7 @@ public class BatchParser {
     }
 
 
-    public static void main(String[] args) {
-        new BatchParser().domain(args);
-    }
-
-    public void consumeHtmlObject(HtmlObject object) {
-        //todo
-    }
+    public abstract void consumeHtmlObject(HtmlObject object);
 
 
     static Gson gson = new Gson();

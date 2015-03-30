@@ -86,8 +86,12 @@ public class TaskMonitor {
 
                     String json = DefetcherUtils.toString(response);
                     if (!StringUtils.isEmpty(json)) {
-                        taskResponse = gson.fromJson(json, TaskResponse.class);
-                        logger.info("fetch tasks, task size:{}", taskResponse.getTasks().size());
+                        try {
+                            taskResponse = gson.fromJson(json, TaskResponse.class);
+                            logger.info("fetch tasks, task size:{}", taskResponse.getTasks().size());
+                        } catch (Exception e) {
+                            logger.error("error : {}", json);
+                        }
                     }
                     EntityUtils.consumeQuietly(entity);
                     break;

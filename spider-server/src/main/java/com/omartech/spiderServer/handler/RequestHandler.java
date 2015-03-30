@@ -3,6 +3,7 @@ package com.omartech.spiderServer.handler;
 import cn.omartech.spider.gen.HtmlObject;
 import cn.omartech.spider.gen.Task;
 import cn.omartech.spider.gen.TaskResponse;
+import cn.techwolf.data.gen.DataService;
 import com.google.gson.Gson;
 import com.omartech.spiderServer.DBService;
 import com.omartech.spiderServer.StatusModel;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,6 +39,15 @@ public class RequestHandler extends AbstractHandler {
     static Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     static Map<String, StatusModel> statusMap = new HashMap<>();
+
+    private DataSource dataSource;
+
+    private String storeDir;
+
+    public RequestHandler(DataSource dataSource, String storeDir) {
+        this.dataSource = dataSource;
+        this.storeDir = storeDir;
+    }
 
     @Override
     public void handle(String path, Request request,
@@ -117,7 +128,7 @@ public class RequestHandler extends AbstractHandler {
         String contentType = item.getContentType();
         logger.info("fileName : {}, contentType : {}", fileName, contentType);
 
-        File folder = new File("spider-server-store");
+        File folder = new File(storeDir);
         if (!folder.exists()) {
             folder.mkdirs();
         }
@@ -133,7 +144,7 @@ public class RequestHandler extends AbstractHandler {
             long taskId = object.getTaskId();
             ids.add(taskId);
         }
-        try (Connection connection = fetchConnection("spidercluster");) {
+        try (Connection connection = dataSource.getConnection()) {
             DBService.delete(connection, ids);
         }
         return ids.size();
@@ -147,7 +158,7 @@ public class RequestHandler extends AbstractHandler {
     void fetchTasks(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
         //find tasks in the db limit 100
         List<Task> tasks = new ArrayList<>();
-        try (Connection connection = fetchConnection("spidercluster");) {
+        try (Connection connection = dataSource.getConnection()) {
             tasks = DBService.findTasks(connection, 0, 10);
         }
         TaskResponse taskResponse = new TaskResponse();
@@ -264,33 +275,33 @@ public class RequestHandler extends AbstractHandler {
         return ip;
     }
 
-    private static Connection fetchConnection(String dbname) {
-        Connection connection = null;
-        boolean flag = false;
-        do {
-            connection = con.get();
-            flag = DBUtils.verifyConnection(connection, "select id from tasks limit 1");
-            if (!flag) {
-                con.remove();
-            }
-        } while (!flag);
-        return connection;
-    }
+//    private static Connection fetchConnection(String dbname) {
+//        Connection connection = null;
+//        boolean flag = false;
+//        do {
+//            connection = .get();
+//            flag = DBUtils.verifyConnection(connection, "select id from tasks limit 1");
+//            if (!flag) {
+//                con.remove();
+//            }
+//        } while (!flag);
+//        return connection;
+//    }
 
-    static ThreadLocal<Connection> con = new InheritableThreadLocal<Connection>() {
-        @Override
-        protected Connection initialValue() {
-            Connection conn = null;
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/spidercluster", "root", "");
-                logger.info("new connection to spidercluster");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return conn;
-        }
-    };
+//    static ThreadLocal<Connection> con = new InheritableThreadLocal<Connection>() {
+//        @Override
+//        protected Connection initialValue() {
+//            Connection conn = null;
+//            try {
+//                Class.forName("com.mysql.jdbc.Driver");
+//                conn = DriverManager.getConnection("jdbc:mysql://" + mysqlIp + ":" + mysqlPort + "/spidercluster", "root", "");
+//                logger.info("new connection to spidercluster");
+//            } catch (ClassNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//            return conn;
+//        }
+//    };
 }
