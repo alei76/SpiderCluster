@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.omartech</groupId>
         <artifactId>spiderCluster</artifactId>
-        <version>2.0-SNOPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
     <artifactId>spider-handler</artifactId>
     <packaging>jar</packaging>
@@ -73,7 +73,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.omartech.spiderServer.SpiderServer</mainClass>
+                            <mainClass>com.omartech.spiderHandler.seed.SinaSeed</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
