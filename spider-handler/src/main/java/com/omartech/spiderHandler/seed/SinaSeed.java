@@ -35,6 +35,7 @@ public class SinaSeed extends ASeedWorker {
         addSeedTasks(chanyexinwen);
         addSeedTasks(gongsixinwen);
 
+
     }
 
     List<SeedTask> hongguanjingji() {//宏观经济
