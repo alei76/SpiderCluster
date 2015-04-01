@@ -49,7 +49,7 @@ public class SpiderWorker implements Runnable {
 
     private static final int MaxRetry = 3;
 
-    List<HtmlObject> objects = new ArrayList<>();
+    private List<HtmlObject> objects = new ArrayList<>();
 
     void doTask(Task task) {
         int times = 0;
@@ -86,20 +86,27 @@ public class SpiderWorker implements Runnable {
                 SubTask subTask = gson.fromJson(subTaskJson, SubTask.class);
                 subTask = subTask == null ? new SubTask() : subTask;
                 List<Task> newTasks = new ArrayList<>();
-                for (Element ele : elements) {
-                    String href = ele.attr("href");
-                    Task newTask = new Task();
-                    newTask.setUrl(href);
-                    newTask.setCookie(subTask.getCookie());
-                    newTask.setHeaderJson(subTask.getHeaderJson());
-                    newTask.setId(task.getId());
-                    newTask.setUseProxy(subTask.useProxy);
-                    newTask.setRefer(task.getUrl());
-                    newTask.setName(task.getName());
-                    newTasks.add(newTask);
-                }
-                for (Task tmp : newTasks) {
-                    doTask(tmp);
+                if (elements != null && elements.size() > 0) {
+                    for (Element ele : elements) {
+                        String href = ele.attr("href");
+                        Task newTask = new Task();
+                        newTask.setUrl(href);
+                        newTask.setCookie(subTask.getCookie());
+                        newTask.setHeaderJson(subTask.getHeaderJson());
+                        newTask.setId(task.getId());
+                        newTask.setUseProxy(subTask.useProxy);
+                        newTask.setRefer(task.getUrl());
+                        newTask.setName(task.getName());
+                        newTasks.add(newTask);
+                    }
+                    for (Task tmp : newTasks) {
+                        doTask(tmp);
+                    }
+                } else {//fix bugs when no content in the regex, the spider will not stop
+                    HtmlObject object1 = new HtmlObject();
+                    object1.setTaskId(task.getId());
+                    object1.setTaskName(task.getName());
+                    objects.add(object1);
                 }
             }
         } else {
