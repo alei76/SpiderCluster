@@ -14,7 +14,7 @@ CREATE TABLE tasks (
   recursive     BOOL,
   parseRegex    VARCHAR(300),
   subTaskJson   TEXT,
-  currentStatus INT,
+  taskStatus INT,
   workerIp      VARCHAR(50),
   PRIMARY KEY (id)
 );

@@ -8,6 +8,11 @@ enum TaskType{
   Post = 2,
 }
 
+enum TaskStatus{
+  UnDo = 0,
+  Doing = 1,
+}
+
 
 struct Task{//具体抓取任务
   1: i64 id,
@@ -22,6 +27,8 @@ struct Task{//具体抓取任务
   11: string parseRegex,//解析当前页中的链接，并返回该内容页
   12: bool recursive = false,//如果是true，则继续抓取parseRegex中的链接
   13: string subTaskJson,//子任务
+  14: string workerIp,//worker ip
+  15: TaskStatus taskStatus,//task status
 }
 struct SubTask{//都不是必填
   1: string headerJson,

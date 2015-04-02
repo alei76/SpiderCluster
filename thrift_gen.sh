@@ -2,12 +2,14 @@
 
 rm -rf spider-server/gen-java
 rm -rf spider-client/gen-java
+rm -rf spider-handler/gen-java
 
 DIR=`pwd`
 FILE="${DIR}/data.thrift"
 
 (cd spider-client && thrift -gen java ${FILE})
 (cd spider-server&& thrift -gen java ${FILE})
+(cd spider-handler&& thrift -gen java ${FILE})
 
 
 

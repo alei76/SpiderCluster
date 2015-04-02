@@ -82,7 +82,7 @@ public abstract class ASeedWorker {
     }
 
 
-    Gson gson = new Gson();
+    protected Gson gson = new Gson();
 
     private void beginToWork() {
         if (tasks.size() == 0) {
@@ -132,11 +132,11 @@ public abstract class ASeedWorker {
         }
     }
 
-    interface SeedTask {
+    public interface SeedTask {
 
     }
 
-    class OnceTask implements SeedTask {
+    public class OnceTask implements SeedTask {
         Task task;
 
         public OnceTask(Task tas) {
@@ -144,7 +144,7 @@ public abstract class ASeedWorker {
         }
     }
 
-    class SchedulateTask implements SeedTask {
+    public class SchedulateTask implements SeedTask {
         Task task;
         int timespan;
         TimeUnit timeUnit;

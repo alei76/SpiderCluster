@@ -1,6 +1,7 @@
 package com.omartech.spiderHandler.parser;
 
 import cn.omartech.spider.gen.HtmlObject;
+import cn.techwolf.data.gen.Article;
 import com.google.gson.Gson;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -46,7 +47,7 @@ public abstract class ABatchParser {
     }
 
 
-    public abstract void consumeHtmlObject(HtmlObject object);
+    public abstract Article parseHtmlObject(HtmlObject object);
 
 
     static Gson gson = new Gson();

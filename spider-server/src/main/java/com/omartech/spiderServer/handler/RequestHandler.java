@@ -3,6 +3,7 @@ package com.omartech.spiderServer.handler;
 import cn.omartech.spider.gen.HtmlObject;
 import cn.omartech.spider.gen.Task;
 import cn.omartech.spider.gen.TaskResponse;
+import cn.omartech.spider.gen.TaskStatus;
 import cn.techwolf.data.gen.DataService;
 import com.google.gson.Gson;
 import com.omartech.spiderServer.DBService;
@@ -66,20 +67,19 @@ public class RequestHandler extends AbstractHandler {
             if (!StringUtils.isEmpty(path)) {
                 switch (path) {
                     case "/fetchtasks":
-                        fetchTasks(httpServletRequest, response);
+                        fetchTasks(ipAddress, response);
                         break;
                     case "/sendresults":
                         try {
-                            int count = receiveResults(httpServletRequest, response);
+                            StatusModel modelThisRun = receiveResults(httpServletRequest, response);
                             StatusModel model = statusMap.get(ipAddress);
                             if (model == null) {
-                                model = new StatusModel();
-                                model.setCount(count);
+                                model = modelThisRun;
                                 model.setIp(ipAddress);
                                 model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
                             } else {
                                 int count1 = model.getCount();
-                                model.setCount(count1 + count);
+                                model.setCount(count1 + modelThisRun.getCount());
                             }
                             statusMap.put(ipAddress, model);
                         } catch (FileUploadException e) {
@@ -92,14 +92,16 @@ public class RequestHandler extends AbstractHandler {
                         break;
                 }
             }
+            response.getWriter().println("<p>©2015 OmarTech</p>");
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            response.getWriter().close();
         }
-        response.getWriter().println("<p>©2015 OmarTech</p>");
     }
 
-    private int receiveResults(HttpServletRequest request, HttpServletResponse response) throws FileUploadException {
-        int count = 0;
+    private StatusModel receiveResults(HttpServletRequest request, HttpServletResponse response) throws FileUploadException {
+        StatusModel statusModel = new StatusModel();
         File tmpFolder = new File("/tmp/spider-server-temp");
         if (!tmpFolder.exists()) {
             tmpFolder.mkdirs();
@@ -114,7 +116,7 @@ public class RequestHandler extends AbstractHandler {
                 if (item.isFormField()) {
                     processFormField(item);
                 } else {
-                    count = processUploadedFile(item);
+                    statusModel = processUploadedFile(item);
                 }
             }
         } catch (FileUploadException e) {
@@ -122,14 +124,15 @@ public class RequestHandler extends AbstractHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return count;
+        return statusModel;
     }
 
-    private int processUploadedFile(FileItem item) throws Exception {
+    private StatusModel processUploadedFile(FileItem item) throws Exception {
+        StatusModel statusModel = new StatusModel();
         String fileName = item.getName();
         String contentType = item.getContentType();
+        statusModel.setTaskName(fileName);
         logger.info("fileName : {}, contentType : {}", fileName, contentType);
-
         File folder = new File(storeDir);
         if (!folder.exists()) {
             folder.mkdirs();
@@ -149,7 +152,8 @@ public class RequestHandler extends AbstractHandler {
         try (Connection connection = dataSource.getConnection()) {
             DBService.delete(connection, ids);
         }
-        return ids.size();
+        statusModel.setCount(ids.size());
+        return statusModel;
     }
 
 
@@ -157,23 +161,26 @@ public class RequestHandler extends AbstractHandler {
         logger.error("no form field is accepted");
     }
 
-    void fetchTasks(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-        //find tasks in the db limit 100
+    void fetchTasks(String ipAddress, HttpServletResponse response) throws SQLException, IOException {
         List<Task> tasks = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            tasks = DBService.findTasks(connection, 0, batchSize);
+            tasks = DBService.findUnDoTasks(connection, 0, batchSize);
         }
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setTasks(tasks);
 
         String json = gson.toJson(taskResponse);
-//        logger.info("json : {}", json);
         response.setContentType("application/Json; charset=utf-8");
         PrintWriter writer = response.getWriter();
         writer.write(json);
         writer.flush();
         writer.close();
-
+        try (Connection connection = dataSource.getConnection()) {
+            for (Task task : tasks) {
+                long id = task.getId();
+                DBService.updateTaskStatus(connection, id, TaskStatus.Doing, ipAddress);
+            }
+        }
     }
 
 
@@ -198,6 +205,9 @@ public class RequestHandler extends AbstractHandler {
         writer.write("<table border='1'>");
         writer.write("<tr>");
         writer.write("<td>");
+        writer.write("任务名");
+        writer.write("</td>");
+        writer.write("<td>");
         writer.write("客户端IP地址");
         writer.write("</td>");
         writer.write("<td>");
@@ -210,6 +220,9 @@ public class RequestHandler extends AbstractHandler {
         for (StatusModel model : models) {
 //            logger.info(model.toString());
             writer.write("<tr>");
+            writer.write("<td>");
+            writer.write(model.getTaskName());
+            writer.write("</td>");
             writer.write("<td>");
             writer.write(model.getIp());
             writer.write("</td>");

@@ -1,6 +1,7 @@
 package com.omartech.spiderServer;
 
 import cn.omartech.spider.gen.Task;
+import cn.omartech.spider.gen.TaskStatus;
 import cn.omartech.spider.gen.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +30,9 @@ public class DBService {
     }
 
 
-    public static List<Task> findTasks(Connection connection, int offset, int limit) throws SQLException {
+    public static List<Task> findUnDoTasks(Connection connection, int offset, int limit) throws SQLException {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM tasks WHERE currentStatus = 0 LIMIT ?, ?";
+        String sql = "SELECT * FROM tasks WHERE taskStatus = " + TaskStatus.UnDo.getValue() + " LIMIT ?, ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
             preparedStatement.setInt(1, offset);
             preparedStatement.setInt(2, limit);
@@ -67,6 +68,21 @@ public class DBService {
         return tasks;
 
     }
+
+    public static void updateTaskStatus(Connection connection, long taskId, TaskStatus taskStatus, String workerIp) throws SQLException {
+        String sql = "UPDATE tasks SET taskStatus = ?, workerIp = ? WHERE id = ?";
+        if (taskStatus != null && taskId != 0) {
+            try (PreparedStatement psmt = connection.prepareStatement(sql)) {
+                psmt.setInt(1, taskStatus.getValue());
+                psmt.setString(2, workerIp);
+                psmt.setLong(3, taskId);
+                psmt.executeUpdate();
+            }
+        } else {
+            logger.error("something wrong about update taskStatus");
+        }
+    }
+
 
     public static void insertTasks(Connection connection, List<Task> tasks) throws SQLException {
         for (Task task : tasks) {

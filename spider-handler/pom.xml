@@ -73,7 +73,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.omartech.spiderHandler.seed.SinaSeed</mainClass>
+                            <mainClass>com.omartech.spiderHandler.seed.QQSeed</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
