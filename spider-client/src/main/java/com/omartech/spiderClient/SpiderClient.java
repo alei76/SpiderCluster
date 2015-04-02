@@ -111,7 +111,11 @@ public class SpiderClient {
 
             recordTask(response);
             for (Task task : tasks) {
-                new SpiderWorker(task, localstore).run();
+                try {
+                    new SpiderWorker(task, localstore).run();
+                } catch (Exception e) {
+                    logger.error("{} is wrong", task.getUrl());
+                }
             }
             logger.info("task size : {}, finish", response.getTasksSize());
 

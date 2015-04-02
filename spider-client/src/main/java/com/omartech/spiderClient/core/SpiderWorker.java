@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.omartech.proxy.proxy_client.ProxyClient;
 import com.techwolf.omartech_utils.spider.DefetcherUtils;
+import com.techwolf.omartech_utils.spider.URLRefiner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -65,7 +66,7 @@ public class SpiderWorker implements Runnable {
                 }
                 times++;
             } while (StringUtils.isEmpty(html) && times < MaxRetry);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         logger.info("task :{},  url : {} is over", task.getName(), task.getUrl());
@@ -89,6 +90,9 @@ public class SpiderWorker implements Runnable {
                 if (elements != null && elements.size() > 0) {
                     for (Element ele : elements) {
                         String href = ele.attr("href");
+                        if (!href.startsWith("http")) {
+                            href = URLRefiner.refineURL(task.getUrl(), href);
+                        }
                         Task newTask = new Task();
                         newTask.setUrl(href);
                         newTask.setCookie(subTask.getCookie());
