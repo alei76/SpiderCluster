@@ -195,6 +195,10 @@ public class SpiderWorker implements Runnable {
                         Thread.sleep(5 * 1000 * 60);
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        get.releaseConnection();
                     }
 
                     break;
