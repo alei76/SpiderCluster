@@ -58,8 +58,12 @@ public abstract class ASeedWorker {
 
 
     private void addScheduleTask(SchedulateTask schedulateTask) {
-        SchedulateTask bigTask = new SchedulateTask(schedulateTask.task, schedulateTask.timespan, schedulateTask.timeUnit);
+        Task task = schedulateTask.task;
+        int timespan = schedulateTask.timespan;
+        TimeUnit timeUnit = schedulateTask.timeUnit;
+        SchedulateTask bigTask = new SchedulateTask(task, timespan, timeUnit);
         tasks.add(bigTask);
+        logger.info("add schedule task {} with every {} {}", new String[]{task.getName(), timespan + "", timeUnit.toString()});
     }
 
     private void addOnceTask(OnceTask onceTask) {
