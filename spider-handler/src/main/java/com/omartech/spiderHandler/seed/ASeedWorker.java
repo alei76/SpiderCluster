@@ -1,6 +1,6 @@
 package com.omartech.spiderHandler.seed;
 
-import cn.omartech.spider.gen.Task;
+import com.omartech.spider.gen.Task;
 import com.google.gson.Gson;
 import com.omartech.spiderServer.DBService;
 import org.apache.commons.dbcp2.BasicDataSource;

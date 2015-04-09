@@ -1,6 +1,6 @@
 package com.omartech.spiderClient.task;
 
-import cn.omartech.spider.gen.TaskResponse;
+import com.omartech.spider.gen.TaskResponse;
 import com.google.gson.Gson;
 import com.techwolf.omartech_utils.spider.DefetcherUtils;
 import org.apache.commons.lang3.StringUtils;

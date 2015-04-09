@@ -1,7 +1,7 @@
 package com.omartech.spiderClient;
 
-import cn.omartech.spider.gen.Task;
-import cn.omartech.spider.gen.TaskResponse;
+import com.omartech.spider.gen.Task;
+import com.omartech.spider.gen.TaskResponse;
 import com.google.gson.Gson;
 import com.omartech.spiderClient.core.SpiderWorker;
 import com.omartech.spiderClient.task.TaskMonitor;

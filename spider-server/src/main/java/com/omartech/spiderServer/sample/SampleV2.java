@@ -1,8 +1,8 @@
 package com.omartech.spiderServer.sample;
 
-import cn.omartech.spider.gen.SubTask;
-import cn.omartech.spider.gen.Task;
-import cn.omartech.spider.gen.TaskType;
+import com.omartech.spider.gen.SubTask;
+import com.omartech.spider.gen.Task;
+import com.omartech.spider.gen.TaskType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.omartech.spiderServer.DBService;

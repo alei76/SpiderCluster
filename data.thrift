@@ -1,4 +1,4 @@
-namespace java cn.omartech.spider.gen
+namespace java com.omartech.spider.gen
 
 // thrift -gen python data.thrift
 // thrift -gen java data.thrift

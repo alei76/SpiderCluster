@@ -1,8 +1,8 @@
 package com.omartech.spiderServer;
 
-import cn.omartech.spider.gen.Task;
-import cn.omartech.spider.gen.TaskStatus;
-import cn.omartech.spider.gen.TaskType;
+import com.omartech.spider.gen.Task;
+import com.omartech.spider.gen.TaskStatus;
+import com.omartech.spider.gen.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

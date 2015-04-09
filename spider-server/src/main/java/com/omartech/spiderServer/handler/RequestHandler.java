@@ -1,14 +1,12 @@
 package com.omartech.spiderServer.handler;
 
-import cn.omartech.spider.gen.HtmlObject;
-import cn.omartech.spider.gen.Task;
-import cn.omartech.spider.gen.TaskResponse;
-import cn.omartech.spider.gen.TaskStatus;
-import cn.techwolf.data.gen.DataService;
 import com.google.gson.Gson;
+import com.omartech.spider.gen.HtmlObject;
+import com.omartech.spider.gen.Task;
+import com.omartech.spider.gen.TaskResponse;
+import com.omartech.spider.gen.TaskStatus;
 import com.omartech.spiderServer.DBService;
 import com.omartech.spiderServer.StatusModel;
-import com.techwolf.omartech_utils.DBUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -29,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -72,7 +69,8 @@ public class RequestHandler extends AbstractHandler {
                     case "/sendresults":
                         try {
                             StatusModel modelThisRun = receiveResults(httpServletRequest, response);
-                            StatusModel model = statusMap.get(ipAddress);
+                            String key = makeKey(ipAddress, modelThisRun.getTaskName());
+                            StatusModel model = statusMap.get(key);
                             if (model == null) {
                                 model = modelThisRun;
                                 model.setIp(ipAddress);
@@ -81,7 +79,7 @@ public class RequestHandler extends AbstractHandler {
                                 int count1 = model.getCount();
                                 model.setCount(count1 + modelThisRun.getCount());
                             }
-                            statusMap.put(ipAddress, model);
+                            statusMap.put(key, model);
                         } catch (FileUploadException e) {
                             e.printStackTrace();
                             response.getWriter().write(e.getMessage());
@@ -98,6 +96,10 @@ public class RequestHandler extends AbstractHandler {
         } finally {
             response.getWriter().close();
         }
+    }
+
+    static String makeKey(String ip, String taskName) {
+        return ip + "-" + taskName;
     }
 
     private StatusModel receiveResults(HttpServletRequest request, HttpServletResponse response) throws FileUploadException {
