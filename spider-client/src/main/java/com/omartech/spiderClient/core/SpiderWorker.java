@@ -72,6 +72,24 @@ public class SpiderWorker implements Runnable {
         logger.info("task :{},  url : {} is over", task.getName(), task.getUrl());
     }
 
+    public static boolean isSameSite(String url1, String url2) {
+        boolean same = false;
+        if (url1.startsWith("http") && url2.startsWith("http")) {
+            String host = URLRefiner.findHost(url1);
+            String host2 = URLRefiner.findHost(url2);
+            if (host.contains(".") && host2.contains(".")) {
+                host = host.substring(host.indexOf("."));
+                host2 = host2.substring(host2.indexOf("."));
+            }
+            if (host.equals(host2)) {
+                same = true;
+            }
+        }
+        if (!same) {
+            logger.warn("{} is not same to {}", url1, url2);
+        }
+        return same;
+    }
 
     @Override
     public void run() {
@@ -96,7 +114,9 @@ public class SpiderWorker implements Runnable {
                         Task newTask = new Task();
                         newTask.setUrl(href);
                         newTask.setCookie(subTask.getCookie());
-                        newTask.setHeaderJson(subTask.getHeaderJson());
+                        if (isSameSite(task.getUrl(), href)) {
+                            newTask.setHeaderJson(subTask.getHeaderJson());
+                        }
                         newTask.setId(task.getId());
                         newTask.setUseProxy(subTask.useProxy);
                         newTask.setRefer(task.getUrl());
@@ -146,7 +166,7 @@ public class SpiderWorker implements Runnable {
                         get = new HttpGet(url);
                     } catch (Exception e) {
                         get.abort();
-                        return null;
+                        break;
                     }
                     if (!StringUtils.isEmpty(headerJson)) {
                         Map<String, String> headers = decodeMap(headerJson);
@@ -192,11 +212,11 @@ public class SpiderWorker implements Runnable {
                                 break;
                         }
                     } catch (EOFException e) {
-                        logger.error("eof broke down, sleep 5min");
-                        Thread.sleep(5 * 1000 * 60);
+                        logger.error("eof broke down, sleep 10s, url:{}", url);
+                        Thread.sleep(10 * 1000);
                     } catch (UnknownHostException e) {
-                        logger.error("dns broke down, sleep 5min");
-                        Thread.sleep(5 * 1000 * 60);
+                        logger.error("dns broke down, sleep 10s, {}", url);
+                        Thread.sleep(10 * 1000);
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (Exception e) {
@@ -204,7 +224,6 @@ public class SpiderWorker implements Runnable {
                     } finally {
                         get.releaseConnection();
                     }
-
                     break;
                 case Post:
                     break;

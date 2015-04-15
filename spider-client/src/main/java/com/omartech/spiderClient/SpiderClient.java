@@ -69,7 +69,7 @@ public class SpiderClient {
 
     String localTaskFile = "__spider-client__task";
 
-    TaskMonitor taskMonitor = new TaskMonitor(server, port);
+    private TaskMonitor taskMonitor = new TaskMonitor(server, port);
 
     void run() throws InterruptedException, IOException {
 

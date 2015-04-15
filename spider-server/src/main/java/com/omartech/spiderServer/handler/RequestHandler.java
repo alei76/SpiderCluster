@@ -78,6 +78,7 @@ public class RequestHandler extends AbstractHandler {
                             } else {
                                 int count1 = model.getCount();
                                 model.setCount(count1 + modelThisRun.getCount());
+                                model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
                             }
                             statusMap.put(key, model);
                         } catch (FileUploadException e) {
@@ -167,6 +168,13 @@ public class RequestHandler extends AbstractHandler {
         List<Task> tasks = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             tasks = DBService.findUnDoTasks(connection, 0, batchSize);
+
+            List<Task> doingTasksWithIp = DBService.findDoingTasksWithIp(connection, ipAddress, 0, batchSize);
+            if (doingTasksWithIp.size() > 0) {
+                for (Task task : doingTasksWithIp) {
+                    DBService.updateTaskStatus(connection, task.getId(), TaskStatus.UnDo, "");
+                }
+            }
         }
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setTasks(tasks);

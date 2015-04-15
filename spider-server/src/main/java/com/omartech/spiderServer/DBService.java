@@ -11,7 +11,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by OmarTech on 15-3-14.
@@ -69,6 +71,46 @@ public class DBService {
 
     }
 
+    public static List<Task> findDoingTasksWithIp(Connection connection, String ip, int offset, int limit) throws SQLException {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks WHERE taskStatus = " + TaskStatus.Doing.getValue() + " and workerIp = ? LIMIT ?, ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
+            preparedStatement.setString(1, ip);
+            preparedStatement.setInt(2, offset);
+            preparedStatement.setInt(3, limit);
+            try (ResultSet resultSet = preparedStatement.executeQuery();) {
+                logger.debug(resultSet.getStatement().toString());
+                while (resultSet.next()) {
+                    String taskName = resultSet.getString("name");
+                    String url = resultSet.getString("url");
+                    String headers = resultSet.getString("headers");
+                    String cookies = resultSet.getString("cookies");
+                    String type = resultSet.getString("type");
+                    long id = resultSet.getLong("id");
+                    String parameters = resultSet.getString("parameters");
+                    boolean recursive = resultSet.getBoolean("recursive");
+                    String parseRegex = resultSet.getString("parseRegex");
+                    String subTaskJson = resultSet.getString("subTaskJson");
+
+                    Task task = new Task();
+                    task.setName(taskName);
+                    task.setId(id);
+                    task.setUrl(url);
+                    task.setCookie(cookies);
+                    task.setHeaderJson(headers);
+                    task.setType(TaskType.valueOf(type));
+                    task.setParameterJson(parameters);
+                    task.setRecursive(recursive);
+                    task.setParseRegex(parseRegex);
+                    task.setSubTaskJson(subTaskJson);
+                    tasks.add(task);
+                }
+            }
+        }
+        return tasks;
+
+    }
+
     public static void updateTaskStatus(Connection connection, long taskId, TaskStatus taskStatus, String workerIp) throws SQLException {
         String sql = "UPDATE tasks SET taskStatus = ?, workerIp = ? WHERE id = ?";
         if (taskStatus != null && taskId != 0) {
@@ -85,10 +127,34 @@ public class DBService {
 
 
     public static void insertTasks(Connection connection, List<Task> tasks) throws SQLException {
-        for (Task task : tasks) {
-            insertTask(connection, task);
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
+        try {
+            connection.setAutoCommit(false);
+            PreparedStatement psmt = connection.prepareStatement(sql);
+            for (Task task : tasks) {
+                psmt.setString(1, task.getName());
+                psmt.setString(2, task.getUrl());
+                psmt.setString(3, task.getCookie());
+                psmt.setString(4, task.getHeaderJson());
+                psmt.setString(5, task.getParameterJson());
+                psmt.setString(6, task.refer);
+                psmt.setString(7, task.getType().toString());
+                psmt.setBoolean(8, task.isRecursive());
+                psmt.setString(9, task.getParseRegex());
+                psmt.setString(10, task.getSubTaskJson());
+                psmt.addBatch();
+            }
+            psmt.executeBatch();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.setAutoCommit(true);
+            for (Task task : tasks) {
+                insertTask(connection, task);
+            }
         }
+        connection.setAutoCommit(true);
     }
+
 
     public static void insertTask(Connection connection, Task task) throws SQLException {
         String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
@@ -106,4 +172,18 @@ public class DBService {
             psmt.executeUpdate();
         }
     }
+
+    public static Map<String, Integer> fetchSchedule(Connection connection) throws SQLException {
+        Map<String, Integer> map = new HashMap<>();
+        String sql = "SELECT name, count(1) c FROM tasks GROUP BY name ORDER BY name";
+        try (PreparedStatement psmt = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = psmt.executeQuery();) {
+                String name = resultSet.getString("name");
+                int c = resultSet.getInt("c");
+                map.put(name, c);
+            }
+        }
+        return map;
+    }
+
 }
