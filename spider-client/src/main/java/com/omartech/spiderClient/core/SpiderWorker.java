@@ -1,12 +1,12 @@
 package com.omartech.spiderClient.core;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.omartech.proxy.proxy_client.ProxyClient;
 import com.omartech.spider.gen.HtmlObject;
 import com.omartech.spider.gen.SubTask;
 import com.omartech.spider.gen.Task;
 import com.omartech.spider.gen.TaskType;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.omartech.proxy.proxy_client.ProxyClient;
 import com.omartech.utils.spider.DefetcherUtils;
 import com.omartech.utils.spider.URLRefiner;
 import org.apache.commons.io.FileUtils;
@@ -147,6 +147,7 @@ public class SpiderWorker implements Runnable {
         }
     }
 
+
     private String work(Task task, HttpHost proxy) throws InterruptedException {
         long id = task.getId();
         String cookie = task.getCookie();
@@ -157,6 +158,7 @@ public class SpiderWorker implements Runnable {
         String refer = task.getRefer();
         String name = task.getName();
         String html = null;
+
 
         try (CloseableHttpClient client = HttpClientBuilder.create().build();) {
             switch (type) {
@@ -243,4 +245,5 @@ public class SpiderWorker implements Runnable {
         }.getType());
         return map;
     }
+
 }

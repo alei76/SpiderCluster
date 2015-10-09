@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -141,7 +143,8 @@ public class RequestHandler extends AbstractHandler {
             folder.mkdirs();
         }
 
-        String newFileName = System.currentTimeMillis() + "." + fileName + ".store";
+//        String newFileName = System.currentTimeMillis() + "." + fileName + ".store";
+        String newFileName = DateFormatUtils.format(new Date(), "yyyyMMddhhmmss") + "." + fileName + ".store";
         File uploadedFile = new File(storeDir + File.separator + newFileName);
         item.write(uploadedFile);
 
