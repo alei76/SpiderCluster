@@ -1,7 +1,7 @@
 package com.omartech.spiderHandler.parser;
 
+import com.omartech.data.gen.Article;
 import com.omartech.spider.gen.HtmlObject;
-import cn.techwolf.data.gen.Article;
 import com.google.gson.Gson;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;

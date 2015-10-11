@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "打包maven项目"
+mvn clean assembly:assembly -Dmaven.test.skip=true
+
+echo "备份数据表结构"
+
+mysqldump -h10.1.0.171 -uroot -pspidercluster -d spidercluster > database-structure.sql
+
+echo "数据表备份完毕"

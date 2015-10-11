@@ -186,4 +186,23 @@ public class DBService {
         return map;
     }
 
+    public static List<StatusModel> fetchTasksInDB(Connection connection) throws SQLException {
+        List<StatusModel> list = new ArrayList<>();
+        String sql = "SELECT name, date(createdAt) createdAt, count(1) c FROM tasks GROUP BY name, date(createdAt) ORDER BY date(createdAt) DESC";
+        try (PreparedStatement psmt = connection.prepareStatement(sql);
+             ResultSet resultSet = psmt.executeQuery();) {
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                String createdAt = resultSet.getString("createdAt");
+                int c = resultSet.getInt("c");
+                StatusModel statusModel = new StatusModel();
+                statusModel.setTaskName(name);
+                statusModel.setLasttime(createdAt);
+                statusModel.setCount(c);
+                list.add(statusModel);
+            }
+        }
+        return list;
+    }
+
 }

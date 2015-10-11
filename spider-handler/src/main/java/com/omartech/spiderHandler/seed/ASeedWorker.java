@@ -26,14 +26,19 @@ public abstract class ASeedWorker {
 
     @Option(name = "-dbp", usage = "-dbp set the database ip and port, like 127.0.0.1:3306")
     String dbIpAndPort = "10.1.0.171:3311";
-    @Option(name = "-u", usage = "-p set the database username")
+    @Option(name = "-u", usage = "-u set the database username")
     String username = "root";
-    @Option(name = "-pw", usage = "-p set the database password")
+    @Option(name = "-pw", usage = "-pw set the database password")
     String password = "spiderserver";
+    @Option(name = "-once", usage = "-once is force insert the once task again, default is false")
+    boolean forceOnce = false;
+
+    @Option(name = "-help", usage = "-help ")
+    boolean help = false;
 
     private static Logger logger = LoggerFactory.getLogger(ASeedWorker.class);
 
-    public abstract void prepare();
+    public abstract void prepare();//add seeds
 
     public void run(String[] args) {
 
@@ -44,14 +49,24 @@ public abstract class ASeedWorker {
             e.printStackTrace();
         }
         parser.setUsageWidth(80);
-        logger.info("============================");
-        logger.info("server runs with args blow:");
-        logger.info("database ip and port : {}", dbIpAndPort);
-        logger.info("database username : {}", username);
-        logger.info("database password : {}", password);
-        logger.info("============================");
-        prepare();
-        beginToWork();
+        if (!help) {
+            logger.info("============================");
+            logger.info("server runs with args blow:");
+            logger.info("database ip and port : {}", dbIpAndPort);
+            logger.info("database username : {}", username);
+            logger.info("database password : {}", password);
+            logger.info("insert once task: {}", forceOnce);
+            logger.info("============================");
+            prepare();
+            beginToWork();
+        } else {
+            logger.info("show all the params:");
+            logger.info("-help help");
+            logger.info("-dbp set the database ip and port, like 127.0.0.1:3306");
+            logger.info("-u set the database username");
+            logger.info("-pw set the database password");
+            logger.info("-once is force insert the once task again, default is false");
+        }
     }
 
     private List<SeedTask> tasks = new ArrayList<>();
@@ -110,8 +125,10 @@ public abstract class ASeedWorker {
                 SchedulateTask schedulateTask = (SchedulateTask) bigTask;
                 service.scheduleAtFixedRate(new SeedRunner(schedulateTask.task, dataSource), 1, schedulateTask.timespan, schedulateTask.timeUnit);
             } else if (bigTask instanceof OnceTask) {
-                OnceTask onceTask = (OnceTask) bigTask;
-                service.submit(new SeedRunner(onceTask.task, dataSource));
+                if (forceOnce) {
+                    OnceTask onceTask = (OnceTask) bigTask;
+                    service.submit(new SeedRunner(onceTask.task, dataSource));
+                }
             }
         }
     }

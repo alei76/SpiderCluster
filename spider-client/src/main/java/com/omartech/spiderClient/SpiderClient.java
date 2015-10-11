@@ -86,9 +86,11 @@ public class SpiderClient {
                     FileUtils.deleteQuietly(tmp);//删掉未完成的那部分
                 }
 
-                logger.info("some task is left");
-                consumeTaskResponse(taskLeft);
-                logger.info("task left if over");
+                if (taskLeft != null) {
+                    logger.info("some task is left");
+                    consumeTaskResponse(taskLeft);
+                    logger.info("task left if over");
+                }
             }
             start = System.currentTimeMillis();
             TaskResponse response = taskMonitor.fetchTasks();

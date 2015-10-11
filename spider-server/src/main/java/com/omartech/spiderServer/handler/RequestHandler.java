@@ -34,9 +34,9 @@ import java.util.*;
  * Created by OmarTech on 15-3-14.
  */
 public class RequestHandler extends AbstractHandler {
-    static Logger logger = LoggerFactory.getLogger(RequestHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
-    static Map<String, StatusModel> statusMap = new HashMap<>();
+    private static Map<String, StatusModel> statusMap = new HashMap<>();
 
     private DataSource dataSource;
 
@@ -69,18 +69,20 @@ public class RequestHandler extends AbstractHandler {
                     case "/sendresults":
                         try {
                             StatusModel modelThisRun = receiveResults(httpServletRequest, response);
-                            String key = makeKey(ipAddress, modelThisRun.getTaskName());
-                            StatusModel model = statusMap.get(key);
-                            if (model == null) {
-                                model = modelThisRun;
-                                model.setIp(ipAddress);
-                                model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
-                            } else {
-                                int count1 = model.getCount();
-                                model.setCount(count1 + modelThisRun.getCount());
-                                model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
+                            if (modelThisRun != null) {
+                                String key = makeKey(ipAddress, modelThisRun.getTaskName());
+                                StatusModel model = statusMap.get(key);
+                                if (model == null) {
+                                    model = modelThisRun;
+                                    model.setIp(ipAddress);
+                                    model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
+                                } else {
+                                    int count1 = model.getCount();
+                                    model.setCount(count1 + modelThisRun.getCount());
+                                    model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
+                                }
+                                statusMap.put(key, model);
                             }
-                            statusMap.put(key, model);
                         } catch (FileUploadException e) {
                             e.printStackTrace();
                             response.getWriter().write(e.getMessage());
@@ -104,7 +106,7 @@ public class RequestHandler extends AbstractHandler {
     }
 
     private StatusModel receiveResults(HttpServletRequest request, HttpServletResponse response) throws FileUploadException {
-        StatusModel statusModel = new StatusModel();
+        StatusModel statusModel = null;
         File tmpFolder = new File("/tmp/spider-server-temp");
         if (!tmpFolder.exists()) {
             tmpFolder.mkdirs();
@@ -141,7 +143,8 @@ public class RequestHandler extends AbstractHandler {
             folder.mkdirs();
         }
 
-        String newFileName = System.currentTimeMillis() + "." + fileName + ".store";
+        String date = DateFormatUtils.format(new Date(), "yyyy-MM-dd-hhmmss");
+        String newFileName = date + "." + fileName + ".store";
         File uploadedFile = new File(storeDir + File.separator + newFileName);
         item.write(uploadedFile);
 
@@ -193,10 +196,9 @@ public class RequestHandler extends AbstractHandler {
         }
     }
 
-
     static Gson gson = new Gson();
 
-    void showStatus(HttpServletResponse response) throws IOException {
+    void showStatus(HttpServletResponse response) throws IOException, SQLException {
         List<StatusModel> models = new ArrayList<>();
         for (Map.Entry<String, StatusModel> entry : statusMap.entrySet()) {
             StatusModel status = entry.getValue();
@@ -210,6 +212,10 @@ public class RequestHandler extends AbstractHandler {
                 return lasttime.compareTo(o2Lasttime);
             }
         });
+        List<StatusModel> tasksUnDo;
+        try (Connection connection = dataSource.getConnection()) {
+            tasksUnDo = DBService.fetchTasksInDB(connection);
+        }
         PrintWriter writer = response.getWriter();
         writer.write("<h3>任务记录</h3>");
         writer.write("<table border='1'>");
@@ -228,13 +234,40 @@ public class RequestHandler extends AbstractHandler {
         writer.write("</td>");
         writer.write("</tr>");
         for (StatusModel model : models) {
-//            logger.info(model.toString());
             writer.write("<tr>");
             writer.write("<td>");
             writer.write(model.getTaskName());
             writer.write("</td>");
             writer.write("<td>");
             writer.write(model.getIp());
+            writer.write("</td>");
+            writer.write("<td>");
+            writer.write(model.getCount() + "");
+            writer.write("</td>");
+            writer.write("<td>");
+            writer.write(model.getLasttime());
+            writer.write("</td>");
+            writer.write("</tr>");
+        }
+        writer.write("</table><p/>");
+
+        writer.write("<h3>数据库中待抓任务记录</h3>");
+        writer.write("<table border='1'>");
+        writer.write("<tr>");
+        writer.write("<td>");
+        writer.write("任务名");
+        writer.write("</td>");
+        writer.write("<td>");
+        writer.write("任务数");
+        writer.write("</td>");
+        writer.write("<td>");
+        writer.write("插入时间");
+        writer.write("</td>");
+        writer.write("</tr>");
+        for (StatusModel model : tasksUnDo) {
+            writer.write("<tr>");
+            writer.write("<td>");
+            writer.write(model.getTaskName());
             writer.write("</td>");
             writer.write("<td>");
             writer.write(model.getCount() + "");
@@ -300,33 +333,4 @@ public class RequestHandler extends AbstractHandler {
         return ip;
     }
 
-//    private static Connection fetchConnection(String dbname) {
-//        Connection connection = null;
-//        boolean flag = false;
-//        do {
-//            connection = .get();
-//            flag = DBUtils.verifyConnection(connection, "select id from tasks limit 1");
-//            if (!flag) {
-//                con.remove();
-//            }
-//        } while (!flag);
-//        return connection;
-//    }
-
-//    static ThreadLocal<Connection> con = new InheritableThreadLocal<Connection>() {
-//        @Override
-//        protected Connection initialValue() {
-//            Connection conn = null;
-//            try {
-//                Class.forName("com.mysql.jdbc.Driver");
-//                conn = DriverManager.getConnection("jdbc:mysql://" + mysqlIp + ":" + mysqlPort + "/spidercluster", "root", "");
-//                logger.info("new connection to spidercluster");
-//            } catch (ClassNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//            return conn;
-//        }
-//    };
 }
