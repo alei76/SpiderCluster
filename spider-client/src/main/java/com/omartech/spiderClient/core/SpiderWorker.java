@@ -147,6 +147,7 @@ public class SpiderWorker implements Runnable {
         }
     }
 
+
     private String work(Task task, HttpHost proxy) throws InterruptedException {
         long id = task.getId();
         String cookie = task.getCookie();
@@ -157,6 +158,7 @@ public class SpiderWorker implements Runnable {
         String refer = task.getRefer();
         String name = task.getName();
         String html = null;
+
 
         try (CloseableHttpClient client = HttpClientBuilder.create().build();) {
             switch (type) {
@@ -243,4 +245,5 @@ public class SpiderWorker implements Runnable {
         }.getType());
         return map;
     }
+
 }

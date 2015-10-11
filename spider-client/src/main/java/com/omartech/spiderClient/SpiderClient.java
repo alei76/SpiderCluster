@@ -7,6 +7,7 @@ import com.omartech.spiderClient.core.SpiderWorker;
 import com.omartech.spiderClient.task.TaskMonitor;
 import com.omartech.spiderClient.task.TaskResults;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ public class SpiderClient {
         CmdLineParser parser = new CmdLineParser(this);
         parser.setUsageWidth(80);
         try {
+            parser.parseArgument(args);
             logger.info("=============================");
             logger.info("client runs with args blow:");
             logger.info("port : {}", port);
@@ -58,10 +60,13 @@ public class SpiderClient {
             } else {
                 folder.mkdirs();
             }
+            taskMonitor = new TaskMonitor(server, port);
             run();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (CmdLineException e) {
             e.printStackTrace();
         }
     }
@@ -69,7 +74,7 @@ public class SpiderClient {
 
     String localTaskFile = "__spider-client__task";
 
-    private TaskMonitor taskMonitor = new TaskMonitor(server, port);
+    private TaskMonitor taskMonitor;
 
     void run() throws InterruptedException, IOException {
 

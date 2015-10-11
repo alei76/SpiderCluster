@@ -10,6 +10,7 @@ Version 2.0 -- plan
 * 提供Docker安装文件
 * 提供服务器端批量入种子方式 √
 * 提供标准文件处理handler √
+* 变更存储文件时间戳为yyyyMMddhhmmss格式 √
 
 
 
@@ -49,4 +50,4 @@ proxy-client
 
 ###协议
 
-    不重要了，觉得有用就用吧。
+    Licensed under the Apache license.
