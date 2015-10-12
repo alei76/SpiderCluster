@@ -2,7 +2,7 @@
 #check the docker command
 command -v docker>/dev/null 2>&1 || { echo >&2 "Docker is not installed in this machine"; exit 1; }
 #0. 编译项目
-#mvn clean assembly:assembly -Dmaven.test.skip=true -U
+(cd spider-client && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
 
 #1. 进入client
 #(cd spider-client && client_name=`ls target/ | grep dependencies.jar`)
@@ -35,6 +35,9 @@ if [[ $? -ne 0 ]]; then #异常退出
 fi
 
 ##spider-server
+#0. 编译项目
+(cd spider-server && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
+
 #1. 复制spidercluster.sql到目标路径
 sql_file="spidercluster.sql"
 if [ -f $sql_file ]; then
@@ -55,7 +58,7 @@ fi
 server_version=${server_name/-jar-with-dependencies.jar/}
 echo "spider server version: "$server_version
 #3. 如果server_name不为空，复制该文件到docker/server/下，检测是否复制成功
-cp spider-server/target/$client_name docker/server/
+cp spider-server/target/$server_name docker/server/
 server_path=docker/server/$server_name
 echo "目标地址：$server_path"
 if [ -f $server_path ]; then
