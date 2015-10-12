@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -jar spider-server-2.1-SNAPSHOT-jar-with-dependencies.jar -d spider-server-store -p 7154 -dbp 127.0.0.1:3306 -u root -pw 
+java -jar spider-server-2.1-SNAPSHOT-jar-with-dependencies.jar -d /spiderstore -p 7154 -dbp $DBP -u $DBU -pw $DBPW

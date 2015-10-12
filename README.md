@@ -51,12 +51,20 @@ proxy-client
 ###Dockerfile相关说明
 路径：docker/client，docker/server
 
-使用：./Dockerfile_gen.sh
+使用：./docker_gen.sh
 
 1. 基镜像为ubuntu+jdk8的版本，只是更改了apt-get的源为163的而已，可替换
 2. 生成的镜像版本根据当前jar的版本而命名
 3. 若更改端口等操作，到对应client或者server的文件夹中将`run.sh`脚本内容修改即可，暂时不支持用docker宏命令修改
 4. server端暂时采用外联mysql的方式，需在run中修改
+
+启动server:
+
+docker run -d -p 7154:7154 -v /tmp/localstore:/spiderstore  omartech/spider-server:2.1
+
+启动client:
+
+docker run --env SERVER=127.0.0.1 --env PORT=7154 --env TIMESPAN=1 -d omartech/spider-client:2.1 
 
 
 ###协议

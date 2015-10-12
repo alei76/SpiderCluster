@@ -1,20 +1,29 @@
-#!/bin/sh
+#!/bin/bash
 #check the docker command
 command -v docker>/dev/null 2>&1 || { echo >&2 "Docker is not installed in this machine"; exit 1; }
-#0. 编译项目
-(cd spider-client && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
 
-#1. 进入client
-#(cd spider-client && client_name=`ls target/ | grep dependencies.jar`)
+command -v mvn>/dev/null 2>&1 || { echo >&2 "Maven is not installed in this machine"; exit 1; }
+
+#1. 编译项目
+#(cd spider-client && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
 
 #2. 检查target下是否有正确的jar包
+if [ -d "spider-client/target" ]; then
+	echo ""
+else
+	echo "mvn没有成功，检查mvn结果"
+	exit
+fi
+
 client_name=`ls spider-client/target/ | grep dependencies.jar`
 #echo $client_name
-if [[ ${#client_name} -eq 0 ]]; then
+if [ ${#client_name} -eq 0 ]; then
   echo "client_name为空, 请检查mvn的结果, client端没有正确生成jar包"
   exit
 fi
 client_version=${client_name/-jar-with-dependencies.jar/}
+client_version=${client_version/spider-client-/}
+client_version=${client_version/-SNAPSHOT/}
 echo "spider client version: "$client_version
 #3. 如果client_name不为空，复制该文件到docker/client/下，检测是否复制成功
 cp spider-client/target/$client_name docker/client/
@@ -27,16 +36,21 @@ else
 fi
 
 #4. 在docker/client目录下执行生成命令
-#(cd docker/client/ && `docker build -t "omartech/$client_version" .)
+#cd docker/client/ 
+docker_command="docker build -t omartech/spider-client:"$client_version" ."
+echo "docker 命令："$docker_command
+(cd docker/client/ ; exec $docker_command)
 
 #5. 判断上面命令是否正确执行
 if [[ $? -ne 0 ]]; then #异常退出
   echo "docker命令异常退出"
 fi
 
+echo "spider-client部分完成"
+
 ##spider-server
 #0. 编译项目
-(cd spider-server && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
+#(cd spider-server && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
 
 #1. 复制spidercluster.sql到目标路径
 sql_file="spidercluster.sql"
@@ -49,6 +63,13 @@ else
 fi
 
 #2. 检查target下是否有正确的jar包
+if [ -d "spider-server/target" ]; then
+	echo ""
+else
+	echo "mvn没有成功，检查mvn结果"
+	exit
+fi
+echo `pwd`
 server_name=`ls spider-server/target/ | grep dependencies.jar`
 #echo $server_name
 if [[ ${#server_name} -eq 0 ]]; then
@@ -56,6 +77,8 @@ if [[ ${#server_name} -eq 0 ]]; then
   exit
 fi
 server_version=${server_name/-jar-with-dependencies.jar/}
+server_version=${server_version/spider-server-/}
+server_version=${server_version/-SNAPSHOT/}
 echo "spider server version: "$server_version
 #3. 如果server_name不为空，复制该文件到docker/server/下，检测是否复制成功
 cp spider-server/target/$server_name docker/server/
@@ -68,7 +91,10 @@ else
 fi
 
 #4. 在docker/server目录下执行生成命令
-#(cd docker/server/ && `docker build -t "omartech/$server_version" .)
+docker_command="docker build -t omartech/spider-server:"$server_version" ."
+echo "docker 命令："$docker_command
+(cd docker/server/ ; exec $docker_command)
+#(cd docker/server/ && `docker build -t "omartech/$server_version" .`)
 
 #5. 判断上面命令是否正确执行
 if [[ $? -ne 0 ]]; then #异常退出

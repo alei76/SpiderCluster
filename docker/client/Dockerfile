@@ -9,10 +9,10 @@ ADD spider-client-2.1-SNAPSHOT-jar-with-dependencies.jar /spider-client/
 
 ADD run.sh /spider-client/
 
-#ENV SERVER 192.168.1.117
-#ENV PORT 7154
-#ENV LOCALSTORE localstore
-#ENV TIMESPAN 5
+ENV SERVER 127.0.0.1
+ENV PORT 7154
+ENV LOCALSTORE localstore
+ENV TIMESPAN 5
 
 #CMD ["java", "-version"]
 ENTRYPOINT ["/spider-client/run.sh"]   #ok
