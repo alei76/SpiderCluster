@@ -10,3 +10,4 @@ spider-server-store/
 __spider-client__task
 localstore/
 docker/server/spidercluster.sql
+.DS_Store
