@@ -12,9 +12,10 @@ RUN apt-get update && \
     apt-get install -y  mysql-server-5.6 \
         		mysql-client-5.6 \
 			supervisor
+RUN mkdir /spiderstore
+VOLUME ["/spiderstore"]
 #switch dir
 RUN mkdir /spiderserver
-RUN mkdir /spiderstore
 WORKDIR /spiderserver
 
 #ADD sql file
