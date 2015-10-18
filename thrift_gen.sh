@@ -23,4 +23,5 @@ if [[ $# -ne 0 ]]; then
   dbpassword=$4
   echo "dump tables from "$dbip" with "$dbport" username: "$dbuser" password: "$dbpassword
 fi
+echo "mysqldump -d -h$dbip -P$dbport -u$dbuser -p$dbpassword spidercluster > spidercluster.sql"
 mysqldump -d -h$dbip -P$dbport -u$dbuser -p$dbpassword spidercluster > spidercluster.sql

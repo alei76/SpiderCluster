@@ -1,12 +1,11 @@
 package com.omartech.spiderServer.handler;
 
 import com.google.gson.Gson;
-import com.omartech.spider.gen.HtmlObject;
-import com.omartech.spider.gen.Task;
-import com.omartech.spider.gen.TaskResponse;
-import com.omartech.spider.gen.TaskStatus;
+import com.google.gson.reflect.TypeToken;
+import com.omartech.spider.gen.*;
 import com.omartech.spiderServer.DBService;
 import com.omartech.spiderServer.StatusModel;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -88,6 +88,67 @@ public class RequestHandler extends AbstractHandler {
                             response.getWriter().write(e.getMessage());
                         }
                         break;
+                    case "/tasks":
+                        showFormPage(httpServletRequest, response);
+                        break;
+                    case "/batchinsert":
+                        String beginStr = request.getParameter("begin");
+                        String endStr = request.getParameter("end");
+                        String url = request.getParameter("url");
+                        String changduStr = request.getParameter("changdu");
+
+                        String header = request.getParameter("headers");
+
+                        logger.info("begin:{}, end:{}, url:{}, changdu:{}", new String[]{beginStr, endStr, url, changduStr});
+
+//                        generate(url, beginStr, endStr, changduStr);
+
+                        if (StringUtils.isEmpty(beginStr) || StringUtils.isEmpty(endStr)
+                                || StringUtils.isEmpty(changduStr)
+                                || (!url.contains("*"))) {
+                            logger.error("数据不对");
+                            return;
+                        }
+                        int begin = Integer.parseInt(beginStr);
+                        int end = Integer.parseInt(endStr);
+                        int changdu = Integer.parseInt(changduStr);
+
+                        Map<String, String> map = new HashMap<>();
+                        String[] headerLines = header.split("\n");
+                        for (String headerline : headerLines) {
+                            String[] split = headerline.split(":");
+                            if (split.length == 2) {
+                                String key = split[0];
+                                String value = split[1];
+                                if (key.equals("Cookie") || key.equals("Connection") || key.equals("Host")) {
+                                    continue;
+                                }
+                                map.put(key, value);
+                                logger.info("key : {}, value:{}", key, value);
+                            }
+                        }
+                        map.put("Connection", "close");
+                        String headerJson = gson.toJson(map, new TypeToken<Map<String, String>>() {
+                        }.getType());
+
+                        try (Connection connection = dataSource.getConnection();) {
+                            for (int i = begin; i <= end; i++) {
+                                String num = transferNum(i, changdu);
+                                String tmpUrl = url.replace("(*)", num);
+                                logger.info("tmpUrl : {}", tmpUrl);
+
+                                Task task = new Task();
+                                task.setHeaderJson(headerJson);
+                                task.setName("batchInsert");
+                                task.setRefer("http://www.baidu.com");
+                                task.setType(TaskType.Get);
+                                task.setUrl(tmpUrl);
+                                task.setTaskStatus(TaskStatus.UnDo);
+                                task.setUseProxy(true);
+                                DBService.insertTask(connection, task);
+                            }
+                        }
+                        break;
                     default:
                         showStatus(response);
                         break;
@@ -99,6 +160,86 @@ public class RequestHandler extends AbstractHandler {
         } finally {
             response.getWriter().close();
         }
+    }
+
+
+    private void generate(String url, String beginStr, String endStr, String changduStr) {
+
+
+    }
+
+    public static String transferNum(int num, int length) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            sb.append("0");
+        }
+        String pattern = sb.toString();
+        DecimalFormat df1 = new DecimalFormat(pattern);
+        String format = df1.format(num);
+        return format;
+    }
+
+
+    private void showFormPage(HttpServletRequest httpServletRequest, HttpServletResponse response) {
+
+        try {
+            PrintWriter writer = response.getWriter();
+            writer.write("<!DOCTYPE html>");
+            writer.write("<html lang=\"en\">");
+            writer.write("<head>");
+            writer.write("    <meta charset=\"UTF-8\">");
+            writer.write("    <title>批量插入下载任务</title>");
+            writer.write("    <style>");
+            writer.write("        .table td {");
+            writer.write("            width: 1024px;");
+            writer.write("        }");
+            writer.write("    </style>");
+            writer.write("</head>");
+            writer.write("<body>");
+            writer.write("");
+            writer.write("<form action=\"/batchinsert\" method=\"post\">");
+            writer.write("");
+            writer.write("    <table class=\"table\">");
+            writer.write("        <tr>");
+            writer.write("            <td>");
+            writer.write("                URL:(例如：http://www.abc.com/file(*).zip)");
+            writer.write("            </td>");
+            writer.write("        </tr>");
+            writer.write("");
+            writer.write("        <tr>");
+            writer.write("            <td>");
+            writer.write("                地址:<input name=\"url\" style=\"width: 50%;\" autocomplete=\"off\">");
+            writer.write("            </td>");
+            writer.write("        </tr>");
+            writer.write("");
+            writer.write("        <tr>");
+            writer.write("            <td>");
+            writer.write("                从 <input name=\"begin\"/> 到 <input name=\"end\"/>， 通配符长度为<input name=\"changdu\"/>");
+            writer.write("            </td>");
+            writer.write("        </tr>");
+            writer.write("        <tr>");
+            writer.write("            <td>");
+            writer.write("                采用Proxy: <input name=\"proxy\" type=\"checkbox\"/>");
+            writer.write("            </td>");
+            writer.write("        </tr>");
+            writer.write("        <tr>");
+            writer.write("            <td><input type=\"submit\"></td>");
+            writer.write("        </tr>");
+            writer.write("        <tr>");
+            writer.write("            <td>");
+            writer.write("                <textarea cols=\"100\" rows=\"20\" name=\"headers\"></textarea>");
+            writer.write("            </td>");
+            writer.write("        </tr>");
+            writer.write("    </table>");
+            writer.write("</form>");
+            writer.write("");
+            writer.write("</body>");
+            writer.write("</html>");
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     static String makeKey(String ip, String taskName) {
@@ -171,13 +312,13 @@ public class RequestHandler extends AbstractHandler {
         List<Task> tasks = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             tasks = DBService.findUnDoTasks(connection, 0, batchSize);
-
             List<Task> doingTasksWithIp = DBService.findDoingTasksWithIp(connection, ipAddress, 0, batchSize);
             if (doingTasksWithIp.size() > 0) {
                 for (Task task : doingTasksWithIp) {
                     DBService.updateTaskStatus(connection, task.getId(), TaskStatus.UnDo, "");
                 }
             }
+            logger.info("find tasks size:{}", tasks.size());
         }
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setTasks(tasks);
@@ -217,6 +358,10 @@ public class RequestHandler extends AbstractHandler {
             tasksUnDo = DBService.fetchTasksInDB(connection);
         }
         PrintWriter writer = response.getWriter();
+        writer.write("<!--");
+        writer.write("<h3>其他功能</h3>");
+        writer.write("<p><a href='/tasks'>添加批量任务</a></p>");
+        writer.write("-->");
         writer.write("<h3>任务记录</h3>");
         writer.write("<table border='1'>");
         writer.write("<tr>");

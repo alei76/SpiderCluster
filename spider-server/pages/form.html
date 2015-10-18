@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>批量插入下载任务</title>
+    <style>
+        .table td {
+            width: 1024px;
+        }
+    </style>
+</head>
+<body>
+
+<form action="/batchinsert" method="post">
+
+    <table class="table">
+        <tr>
+            <td>
+                URL:(例如：http://www.abc.com/file(*).zip)
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                地址:<input name="url" style="width: 50%;" autocomplete="off">
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                从 <input name="begin"/> 到 <input name="end"/>， 通配符长度为<input name="changdu"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                采用Proxy: <input name="proxy" type="checkbox"/>
+            </td>
+        </tr>
+        <tr>
+            <td><input type="submit"></td>
+        </tr>
+        <tr>
+            <td>
+                <textarea cols="100" rows="20" name="headers"></textarea>
+            </td>
+        </tr>
+    </table>
+</form>
+
+</body>
+</html>

@@ -5,6 +5,8 @@
 
 Version 2.0 -- plan
 
+* 对文件进行压缩
+* 支持在线添加批量任务 √
 * 支持POST任务
 * 服务器端支持列表任务（添加列表页及其jquery表达式，由客户端直接抓取内容页） √
 * 提供Docker安装文件 √
@@ -66,7 +68,31 @@ docker run -d -p 7154:7154 -v /tmp/localstore:/spiderstore  omartech/spider-serv
 
 docker run --env SERVER=127.0.0.1 --env PORT=7154 --env TIMESPAN=1 -d omartech/spider-client:2.1 
 
+###Future
+
+1. 服务端提供任务和接收文件。
+    
+    * 发送任务 √
+    * 接收文件 √
+    * 任务区分优先级
+
+2. 任务按照不同的名字区分。 √
+
+3. 任务的属性：
+
+    * 设定是否使用代理 √
+    * 设定抓取间隔
+    * 设定header √
+    * 设定cookie √
+
+4. 任务的执行：
+
+    * 不同名字的任务用不同的分组执行
+    * 分组间相互独立
+
+
 
 ###协议
 
     Licensed under the Apache license.
+

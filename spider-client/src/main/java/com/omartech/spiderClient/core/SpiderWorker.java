@@ -11,6 +11,7 @@ import com.omartech.utils.spider.DefetcherUtils;
 import com.omartech.utils.spider.URLRefiner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -207,6 +208,15 @@ public class SpiderWorker implements Runnable {
                                 object.setHtml(html);
                                 object.setTaskId(id);
                                 objects.add(object);
+                                break;
+                            case 302:
+                                Header[] allHeaders = httpResponse.getAllHeaders();
+                                for (Header header : allHeaders) {
+                                    logger.info("header, key: {}, value: {}", header.getName(), header.getValue());
+                                    if (header.getName().equals("Location")) {
+                                        logger.info("302, from {} to {}", url, header.getValue());
+                                    }
+                                }
                                 break;
                             default:
                                 logger.info("url: {}, status code:{}, with proxy :{}", new String[]{url, statusCode + "", proxy == null ? "null" : proxy.toHostString()});

@@ -118,6 +118,7 @@ public class SpiderClient {
 
             recordTask(response);
             for (Task task : tasks) {
+                logger.info(task.toString());
                 try {
                     new SpiderWorker(task, localstore).run();
                 } catch (Exception e) {

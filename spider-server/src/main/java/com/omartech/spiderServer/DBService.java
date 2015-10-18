@@ -35,6 +35,7 @@ public class DBService {
     public static List<Task> findUnDoTasks(Connection connection, int offset, int limit) throws SQLException {
         List<Task> tasks = new ArrayList<>();
         String sql = "SELECT * FROM tasks WHERE taskStatus = " + TaskStatus.UnDo.getValue() + " LIMIT ?, ?";
+//        logger.info("find undo task : {}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
             preparedStatement.setInt(1, offset);
             preparedStatement.setInt(2, limit);
@@ -51,6 +52,7 @@ public class DBService {
                     boolean recursive = resultSet.getBoolean("recursive");
                     String parseRegex = resultSet.getString("parseRegex");
                     String subTaskJson = resultSet.getString("subTaskJson");
+                    boolean useProxy = resultSet.getBoolean("useProxy");
 
                     Task task = new Task();
                     task.setName(taskName);
@@ -63,6 +65,8 @@ public class DBService {
                     task.setRecursive(recursive);
                     task.setParseRegex(parseRegex);
                     task.setSubTaskJson(subTaskJson);
+                    task.setUseProxy(useProxy);
+                    task.setTaskStatus(TaskStatus.UnDo);
                     tasks.add(task);
                 }
             }
@@ -91,6 +95,7 @@ public class DBService {
                     boolean recursive = resultSet.getBoolean("recursive");
                     String parseRegex = resultSet.getString("parseRegex");
                     String subTaskJson = resultSet.getString("subTaskJson");
+                    boolean useProxy = resultSet.getBoolean("useProxy");
 
                     Task task = new Task();
                     task.setName(taskName);
@@ -103,6 +108,8 @@ public class DBService {
                     task.setRecursive(recursive);
                     task.setParseRegex(parseRegex);
                     task.setSubTaskJson(subTaskJson);
+                    task.setUseProxy(useProxy);
+                    task.setTaskStatus(TaskStatus.Doing);
                     tasks.add(task);
                 }
             }
@@ -127,7 +134,7 @@ public class DBService {
 
 
     public static void insertTasks(Connection connection, List<Task> tasks) throws SQLException {
-        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson, taskStatus, useProxy) VALUES(?,?,?,?,?,?,?, ?, ?, ?, ?, ?)";
         try {
             connection.setAutoCommit(false);
             PreparedStatement psmt = connection.prepareStatement(sql);
@@ -142,6 +149,8 @@ public class DBService {
                 psmt.setBoolean(8, task.isRecursive());
                 psmt.setString(9, task.getParseRegex());
                 psmt.setString(10, task.getSubTaskJson());
+                psmt.setInt(11, task.getTaskStatus().getValue());
+                psmt.setBoolean(12, task.isUseProxy());
                 psmt.addBatch();
             }
             psmt.executeBatch();
@@ -157,7 +166,7 @@ public class DBService {
 
 
     public static void insertTask(Connection connection, Task task) throws SQLException {
-        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson) VALUES(?,?,?,?,?,?,?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson, taskStatus, useProxy) VALUES(?,?,?,?,?,?,?, ?, ?, ?, ?, ?)";
         try (PreparedStatement psmt = connection.prepareStatement(sql)) {
             psmt.setString(1, task.getName());
             psmt.setString(2, task.getUrl());
@@ -169,6 +178,8 @@ public class DBService {
             psmt.setBoolean(8, task.isRecursive());
             psmt.setString(9, task.getParseRegex());
             psmt.setString(10, task.getSubTaskJson());
+            psmt.setInt(11, task.getTaskStatus().getValue());
+            psmt.setBoolean(12, task.isUseProxy());
             psmt.executeUpdate();
         }
     }
