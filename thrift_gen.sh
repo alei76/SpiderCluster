@@ -12,9 +12,9 @@ FILE="${DIR}/data.thrift"
 (cd spider-handler&& thrift -gen java ${FILE})
 
 dbip=10.1.0.171
-dbport=3306
+dbport=3311
 dbuser=root
-dbpassword=123123
+dbpassword=spiderserver
 
 if [[ $# -ne 0 ]]; then
   dbip=$1

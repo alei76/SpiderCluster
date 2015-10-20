@@ -5,7 +5,7 @@ command -v docker>/dev/null 2>&1 || { echo >&2 "Docker is not installed in this 
 command -v mvn>/dev/null 2>&1 || { echo >&2 "Maven is not installed in this machine"; exit 1; }
 
 #1. 编译项目
-#(cd spider-client && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
+(cd spider-client && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
 
 #2. 检查target下是否有正确的jar包
 if [ -d "spider-client/target" ]; then
@@ -50,7 +50,7 @@ echo "spider-client部分完成"
 
 ##spider-server
 #0. 编译项目
-#(cd spider-server && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
+(cd spider-server && mvn clean assembly:assembly -Dmaven.test.skip=true -U)
 
 #1. 复制spidercluster.sql到目标路径
 sql_file="spidercluster.sql"

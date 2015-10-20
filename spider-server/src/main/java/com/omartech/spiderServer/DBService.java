@@ -34,13 +34,14 @@ public class DBService {
 
     public static List<Task> findUnDoTasks(Connection connection, int offset, int limit) throws SQLException {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM tasks WHERE taskStatus = " + TaskStatus.UnDo.getValue() + " LIMIT ?, ?";
+        String sql = "SELECT * FROM tasks WHERE taskStatus = ? LIMIT ?, ?";
 //        logger.info("find undo task : {}", sql);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
-            preparedStatement.setInt(1, offset);
-            preparedStatement.setInt(2, limit);
+            preparedStatement.setInt(1, TaskStatus.UnDo.getValue());
+            preparedStatement.setInt(2, offset);
+            preparedStatement.setInt(3, limit);
             try (ResultSet resultSet = preparedStatement.executeQuery();) {
-                logger.debug(resultSet.getStatement().toString());
+//                logger.info(resultSet.getStatement().toString());
                 while (resultSet.next()) {
                     String taskName = resultSet.getString("name");
                     String url = resultSet.getString("url");
@@ -69,8 +70,11 @@ public class DBService {
                     task.setTaskStatus(TaskStatus.UnDo);
                     tasks.add(task);
                 }
+            }catch (Exception e){
+                e.printStackTrace();
             }
         }
+        logger.info("return {}", tasks.size());
         return tasks;
 
     }

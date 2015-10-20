@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import com.omartech.spider.gen.*;
 import com.omartech.spiderServer.DBService;
 import com.omartech.spiderServer.StatusModel;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -82,6 +81,7 @@ public class RequestHandler extends AbstractHandler {
                                     model.setLasttime(DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss"));
                                 }
                                 statusMap.put(key, model);
+                                logger.info("{} send {} files back.", ipAddress, modelThisRun.getCount());
                             }
                         } catch (FileUploadException e) {
                             e.printStackTrace();
@@ -151,21 +151,15 @@ public class RequestHandler extends AbstractHandler {
                         break;
                     default:
                         showStatus(response);
+                        response.getWriter().println("<p>©2015 OmarTech</p>");
                         break;
                 }
             }
-            response.getWriter().println("<p>©2015 OmarTech</p>");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             response.getWriter().close();
         }
-    }
-
-
-    private void generate(String url, String beginStr, String endStr, String changduStr) {
-
-
     }
 
     public static String transferNum(int num, int length) {
@@ -312,14 +306,20 @@ public class RequestHandler extends AbstractHandler {
         List<Task> tasks = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             tasks = DBService.findUnDoTasks(connection, 0, batchSize);
+            logger.info("return {} with {} tasks.", ipAddress, tasks.size());
             List<Task> doingTasksWithIp = DBService.findDoingTasksWithIp(connection, ipAddress, 0, batchSize);
+            logger.info("find {} had {} tasks not finish", ipAddress, doingTasksWithIp.size());
             if (doingTasksWithIp.size() > 0) {
                 for (Task task : doingTasksWithIp) {
                     DBService.updateTaskStatus(connection, task.getId(), TaskStatus.UnDo, "");
                 }
             }
-            logger.info("find tasks size:{}", tasks.size());
+            for (Task task : tasks) {
+                long id = task.getId();
+                DBService.updateTaskStatus(connection, id, TaskStatus.Doing, ipAddress);
+            }
         }
+
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setTasks(tasks);
 
@@ -328,13 +328,6 @@ public class RequestHandler extends AbstractHandler {
         PrintWriter writer = response.getWriter();
         writer.write(json);
         writer.flush();
-        writer.close();
-        try (Connection connection = dataSource.getConnection()) {
-            for (Task task : tasks) {
-                long id = task.getId();
-                DBService.updateTaskStatus(connection, id, TaskStatus.Doing, ipAddress);
-            }
-        }
     }
 
     static Gson gson = new Gson();
