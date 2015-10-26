@@ -75,7 +75,7 @@ docker run --env SERVER=127.0.0.1 --env PORT=7154 --env TIMESPAN=1 -d omartech/s
     * 发送任务 √
     * 接收文件 √
     * 任务区分优先级
-    * 接收error任务并删掉相应任务 
+    * 接收error任务并删掉相应任务 √
 
 2. 任务按照不同的名字区分。 √
 
