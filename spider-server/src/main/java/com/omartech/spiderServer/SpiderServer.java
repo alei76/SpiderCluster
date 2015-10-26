@@ -25,8 +25,11 @@ public class SpiderServer {
     private String dbIpandPort = "127.0.0.1:3306";
     @Option(name = "-u", usage = "-p set the database username")
     private String username = "root";
-    @Option(name = "-pw", usage = "-p set the database password")
+    @Option(name = "-pw", usage = "-pw set the database password")
     private String password = "";
+
+    @Option(name = "-rbs", usage = "-rbs set the request batch size")
+    int requestBatchSize = 100;
 
     void domain(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
@@ -43,6 +46,7 @@ public class SpiderServer {
         logger.info("database ip and port : {}", dbIpandPort);
         logger.info("database username : {}", username);
         logger.info("database password : {}", password);
+        logger.info("request batch size : {}", requestBatchSize);
         logger.info("============================");
 
         BasicDataSource dataSource = new BasicDataSource();
@@ -55,8 +59,14 @@ public class SpiderServer {
         dataSource.setMaxIdle(5);
         dataSource.setMinIdle(2);
 
+
+        ServerProperties serverProperties = new ServerProperties();
+        serverProperties.setDataSource(dataSource);
+        serverProperties.setDataStorePath(storeDir);
+        serverProperties.setRequestBatchSize(requestBatchSize);
+
         Server server = new Server(port);
-        server.setHandler(new RequestHandler(dataSource, storeDir));
+        server.setHandler(new RequestHandler(serverProperties));
         try {
             server.start();
         } catch (Exception e) {

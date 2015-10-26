@@ -1,7 +1,7 @@
 package com.omartech.spiderHandler.seed;
 
-import com.omartech.spider.gen.Task;
 import com.google.gson.Gson;
+import com.omartech.spider.gen.Task;
 import com.omartech.spiderServer.DBService;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.kohsuke.args4j.CmdLineException;

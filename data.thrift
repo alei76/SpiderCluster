@@ -11,6 +11,7 @@ enum TaskType{
 enum TaskStatus{
   UnDo = 0,
   Doing = 1,
+  Error = 2,
 }
 
 

@@ -1,5 +1,7 @@
 package com.omartech.spiderServer;
 
+import com.omartech.spider.gen.TaskStatus;
+
 /**
  * Created by OmarTech on 15-3-15.
  */
@@ -8,7 +10,16 @@ public class StatusModel {
     private String ip;
     private String taskName;
     private String lasttime;
+    private TaskStatus taskStatus;
     private int count;
+
+    public TaskStatus getTaskStatus() {
+        return taskStatus;
+    }
+
+    public void setTaskStatus(TaskStatus taskStatus) {
+        this.taskStatus = taskStatus;
+    }
 
     @Override
     public String toString() {
@@ -16,6 +27,7 @@ public class StatusModel {
                 "ip='" + ip + '\'' +
                 ", taskName='" + taskName + '\'' +
                 ", lasttime='" + lasttime + '\'' +
+                ", taskStatus=" + taskStatus +
                 ", count=" + count +
                 '}';
     }

@@ -70,7 +70,7 @@ public class DBService {
                     task.setTaskStatus(TaskStatus.UnDo);
                     tasks.add(task);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -203,17 +203,20 @@ public class DBService {
 
     public static List<StatusModel> fetchTasksInDB(Connection connection) throws SQLException {
         List<StatusModel> list = new ArrayList<>();
-        String sql = "SELECT name, date(createdAt) createdAt, count(1) c FROM tasks GROUP BY name, date(createdAt) ORDER BY date(createdAt) DESC";
+        String sql = "SELECT name, date(createdAt) createdAt, count(1) c, taskStatus FROM tasks GROUP BY name, date(createdAt), taskStatus ORDER BY date(createdAt) DESC, taskStatus DESC";
         try (PreparedStatement psmt = connection.prepareStatement(sql);
              ResultSet resultSet = psmt.executeQuery();) {
             while (resultSet.next()) {
                 String name = resultSet.getString("name");
                 String createdAt = resultSet.getString("createdAt");
                 int c = resultSet.getInt("c");
+                int taskStatus = resultSet.getInt("taskStatus");
                 StatusModel statusModel = new StatusModel();
                 statusModel.setTaskName(name);
                 statusModel.setLasttime(createdAt);
                 statusModel.setCount(c);
+                statusModel.setTaskStatus(TaskStatus.findByValue(taskStatus));
+
                 list.add(statusModel);
             }
         }

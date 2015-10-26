@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.omartech.spider.gen.*;
 import com.omartech.spiderServer.DBService;
+import com.omartech.spiderServer.ServerProperties;
 import com.omartech.spiderServer.StatusModel;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -43,9 +44,10 @@ public class RequestHandler extends AbstractHandler {
 
     private int batchSize = 100;
 
-    public RequestHandler(DataSource dataSource, String storeDir) {
-        this.dataSource = dataSource;
-        this.storeDir = storeDir;
+    public RequestHandler(ServerProperties serverProperties) {
+        this.dataSource = serverProperties.getDataSource();
+        this.storeDir = serverProperties.getDataStorePath();
+        this.batchSize = serverProperties.getRequestBatchSize();
     }
 
     @Override
@@ -256,7 +258,7 @@ public class RequestHandler extends AbstractHandler {
                 if (item.isFormField()) {
                     processFormField(item);
                 } else {
-                    statusModel = processUploadedFile(item);
+                    statusModel = processUploadedFile(request, item);
                 }
             }
         } catch (FileUploadException e) {
@@ -267,7 +269,7 @@ public class RequestHandler extends AbstractHandler {
         return statusModel;
     }
 
-    private StatusModel processUploadedFile(FileItem item) throws Exception {
+    private StatusModel processUploadedFile(HttpServletRequest request, FileItem item) throws Exception {
         StatusModel statusModel = new StatusModel();
         String fileName = item.getName();
         String contentType = item.getContentType();
@@ -278,20 +280,42 @@ public class RequestHandler extends AbstractHandler {
             folder.mkdirs();
         }
 
-        String date = DateFormatUtils.format(new Date(), "yyyy-MM-dd-hhmmss");
-        String newFileName = date + "." + fileName + ".store";
-        File uploadedFile = new File(storeDir + File.separator + newFileName);
-        item.write(uploadedFile);
-
-        List<String> lines = FileUtils.readLines(uploadedFile);
         List<Long> ids = new ArrayList<>();
-        for (String line : lines) {
-            HtmlObject object = gson.fromJson(line, HtmlObject.class);
-            long taskId = object.getTaskId();
-            ids.add(taskId);
-        }
-        try (Connection connection = dataSource.getConnection()) {
-            DBService.delete(connection, ids);
+        switch (fileName) {
+            case "error_tasks"://返回错误文件，直接删除url,避免被其他client继续消费
+                File errorFile = new File(fileName);
+                item.write(errorFile);
+                List<String> errors = FileUtils.readLines(errorFile);
+                for (String line : errors) {
+                    long taskId = Long.parseLong(line);
+                    ids.add(taskId);
+                }
+                logger.info("不能抓取的任务收到{}条.", ids.size());
+                String ipAddress = getIpAddress(request);
+                if (ids.size() > 0) {
+                    try (Connection connection = dataSource.getConnection()) {
+                        for (long taskId : ids) {
+                            DBService.updateTaskStatus(connection, taskId, TaskStatus.Error, ipAddress);
+                        }
+                    }
+                }
+                break;
+            default://正常收到的任务结果
+                String date = DateFormatUtils.format(new Date(), "yyyy-MM-dd-hhmmss");
+                String newFileName = date + "." + fileName + ".store";
+                File uploadedFile = new File(storeDir + File.separator + newFileName);
+                item.write(uploadedFile);
+
+                List<String> lines = FileUtils.readLines(uploadedFile);
+                for (String line : lines) {
+                    HtmlObject object = gson.fromJson(line, HtmlObject.class);
+                    long taskId = object.getTaskId();
+                    ids.add(taskId);
+                }
+                try (Connection connection = dataSource.getConnection()) {
+                    DBService.delete(connection, ids);
+                }
+                break;
         }
         statusModel.setCount(ids.size());
         return statusModel;
@@ -401,6 +425,9 @@ public class RequestHandler extends AbstractHandler {
         writer.write("<td>");
         writer.write("插入时间");
         writer.write("</td>");
+        writer.write("<td>");
+        writer.write("任务状态");
+        writer.write("</td>");
         writer.write("</tr>");
         for (StatusModel model : tasksUnDo) {
             writer.write("<tr>");
@@ -412,6 +439,10 @@ public class RequestHandler extends AbstractHandler {
             writer.write("</td>");
             writer.write("<td>");
             writer.write(model.getLasttime());
+            writer.write("</td>");
+            writer.write("<td>");
+            String name = model.getTaskStatus().name();
+            writer.write(name);
             writer.write("</td>");
             writer.write("</tr>");
         }

@@ -41,7 +41,7 @@ public class SpiderClient {
 
     void domain(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
-        parser.setUsageWidth(80);
+        parser.setUsageWidth(120);
         try {
             parser.parseArgument(args);
             logger.info("=============================");
@@ -121,6 +121,7 @@ public class SpiderClient {
                 logger.info(task.toString());
                 try {
                     new SpiderWorker(task, localstore).run();
+//                    new Thread(new SpiderWorker(task, localstore)).start();
                 } catch (Exception e) {
                     logger.error("{} is wrong", task.getUrl());
                 }
@@ -129,20 +130,25 @@ public class SpiderClient {
 
             FileUtils.deleteQuietly(new File(localTaskFile));
             File folder = new File(localstore);
+            int fileCount = 0;
             for (File tmp : folder.listFiles()) {
                 TaskResults taskResults = new TaskResults(tmp);
-                boolean flag = false;
+                boolean failed = true;
                 do {
-                    flag = taskMonitor.sendResults(taskResults);
-                    if (!flag) {
-                        logger.info("发送数据失败，休息{}min", timeSpan);
-                        Thread.sleep(timeSpan * 1000 * 60);
-                    } else {
+                    boolean status = taskMonitor.sendResults(taskResults);
+                    if (status) {
                         logger.info("数据发送完毕, 删掉文件");
                         FileUtils.deleteQuietly(tmp);
+                        failed = false;
+                    } else {
+                        logger.info("发送数据失败，休息{}min", timeSpan);
+                        Thread.sleep(timeSpan * 1000 * 60);
+                        failed = true;
                     }
-                } while (!flag);
+                } while (failed);
+                fileCount++;
             }
+            logger.info("本次任务共计{}个文件。", fileCount);
         }
     }
 

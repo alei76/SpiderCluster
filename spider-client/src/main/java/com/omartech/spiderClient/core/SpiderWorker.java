@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Created by OmarTech on 15-3-14.
  */
-public class SpiderWorker implements Runnable {
+public class SpiderWorker {
     static Logger logger = LoggerFactory.getLogger(SpiderWorker.class);
     private Task task;
 
@@ -52,26 +52,48 @@ public class SpiderWorker implements Runnable {
     private static final int MaxRetry = 3;
 
     private List<HtmlObject> objects = new ArrayList<>();
+    private List<Long> errors = new ArrayList<>();
 
     void doTask(Task task) {
         int times = 0;
-        String html = null;
+        FetchResponse response = null;
         try {
             do {
                 if (task.useProxy) {
                     ProxyClient proxyClient = new ProxyClient();
                     HttpHost proxy = proxyClient.fetchOne();
-                    html = work(task, proxy);
+                    response = work(task, proxy);
                 } else {
-                    html = work(task, null);
+                    response = work(task, null);
                 }
                 times++;
-            } while (StringUtils.isEmpty(html) && times < MaxRetry);
+
+                int statusCode = response.statusCode;
+                if (statusCode != 200) {
+                    long taskId = task.getId();
+                    errors.add(taskId);
+                }
+
+            } while (retryLogic(response, times));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        logger.info("task :{},  url : {} is over", task.getName(), task.getUrl());
+        logger.info("task :{},  url : {} is over， objects size:{}", new String[]{task.getName(), task.getUrl(), objects.size() + ""});
     }
+
+    boolean retryLogic(FetchResponse response, int times) {
+        boolean flag = false;
+
+        int statusCode = response.statusCode;
+
+        if (StringUtils.isEmpty(response.html)) {
+            if (statusCode == 200 || statusCode == 0) {
+                flag = true;
+            }
+        }
+        return flag && (times < MaxRetry);
+    }
+
 
     public static boolean isSameSite(String url1, String url2) {
         boolean same = false;
@@ -92,7 +114,6 @@ public class SpiderWorker implements Runnable {
         return same;
     }
 
-    @Override
     public void run() {
         if (task.recursive) {//recursive
             doTask(task);
@@ -137,6 +158,7 @@ public class SpiderWorker implements Runnable {
         } else {
             doTask(task);
         }
+
         for (HtmlObject object : objects) {
             String taskName = object.getTaskName();
             String json = gson.toJson(object);
@@ -146,10 +168,17 @@ public class SpiderWorker implements Runnable {
                 e.printStackTrace();
             }
         }
+        for (long taskId : errors) {
+            try {
+                FileUtils.write(new File(localstore + File.separator + "error_tasks"), taskId + "\n", true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
-    private String work(Task task, HttpHost proxy) throws InterruptedException {
+    private FetchResponse work(Task task, HttpHost proxy) throws InterruptedException {
         long id = task.getId();
         String cookie = task.getCookie();
         String headerJson = task.getHeaderJson();
@@ -160,6 +189,7 @@ public class SpiderWorker implements Runnable {
         String name = task.getName();
         String html = null;
 
+        FetchResponse fetchResponse = new FetchResponse();
 
         try (CloseableHttpClient client = HttpClientBuilder.create().build();) {
             switch (type) {
@@ -199,6 +229,7 @@ public class SpiderWorker implements Runnable {
                     try {
                         HttpResponse httpResponse = client.execute(get);
                         int statusCode = httpResponse.getStatusLine().getStatusCode();
+                        fetchResponse.statusCode = statusCode;
                         switch (statusCode) {
                             case 200:
                                 html = DefetcherUtils.toString(httpResponse);
@@ -212,7 +243,7 @@ public class SpiderWorker implements Runnable {
                             case 302:
                                 Header[] allHeaders = httpResponse.getAllHeaders();
                                 for (Header header : allHeaders) {
-                                    logger.info("header, key: {}, value: {}", header.getName(), header.getValue());
+//                                    logger.info("header, key: {}, value: {}", header.getName(), header.getValue());
                                     if (header.getName().equals("Location")) {
                                         logger.info("302, from {} to {}", url, header.getValue());
                                     }
@@ -245,7 +276,8 @@ public class SpiderWorker implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return html;
+        fetchResponse.html = html;
+        return fetchResponse;
     }
 
     private static Gson gson = new Gson();
@@ -255,5 +287,10 @@ public class SpiderWorker implements Runnable {
         }.getType());
         return map;
     }
+}
 
+class FetchResponse {
+    String html;
+    int statusCode = NULL;
+    public static int NULL = 0;
 }
