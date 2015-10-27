@@ -3,10 +3,7 @@ package com.omartech.spiderClient.core;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.omartech.proxy.proxy_client.ProxyClient;
-import com.omartech.spider.gen.HtmlObject;
-import com.omartech.spider.gen.SubTask;
-import com.omartech.spider.gen.Task;
-import com.omartech.spider.gen.TaskType;
+import com.omartech.spider.gen.*;
 import com.omartech.utils.spider.DefetcherUtils;
 import com.omartech.utils.spider.URLRefiner;
 import org.apache.commons.io.FileUtils;
@@ -232,7 +229,12 @@ public class SpiderWorker {
                         fetchResponse.statusCode = statusCode;
                         switch (statusCode) {
                             case 200:
-                                html = DefetcherUtils.toString(httpResponse);
+                                ContentType contentType = task.getContentType();
+                                if (contentType == null) {
+                                    html = DefetcherUtils.toString(httpResponse);
+                                } else {
+                                    html = DefetcherUtils.toString(httpResponse, contentType.name());
+                                }
                                 HtmlObject object = new HtmlObject();
                                 object.setUrl(url);
                                 object.setTaskName(name);

@@ -1,8 +1,10 @@
 package com.omartech.spiderServer;
 
+import com.omartech.spider.gen.ContentType;
 import com.omartech.spider.gen.Task;
 import com.omartech.spider.gen.TaskStatus;
 import com.omartech.spider.gen.TaskType;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,7 @@ public class DBService {
                     String parseRegex = resultSet.getString("parseRegex");
                     String subTaskJson = resultSet.getString("subTaskJson");
                     boolean useProxy = resultSet.getBoolean("useProxy");
+                    String contentType = resultSet.getString("contentType");
 
                     Task task = new Task();
                     task.setName(taskName);
@@ -68,6 +71,19 @@ public class DBService {
                     task.setSubTaskJson(subTaskJson);
                     task.setUseProxy(useProxy);
                     task.setTaskStatus(TaskStatus.UnDo);
+                    if (!StringUtils.isEmpty(contentType)) {
+                        switch (contentType) {
+                            case "GB2312":
+                                task.setContentType(ContentType.GBK);
+                                break;
+                            case "GBK":
+                                task.setContentType(ContentType.GBK);
+                                break;
+                            default:
+                                task.setContentType(ContentType.UTF_8);
+                                break;
+                        }
+                    }
                     tasks.add(task);
                 }
             } catch (Exception e) {
@@ -100,6 +116,8 @@ public class DBService {
                     String parseRegex = resultSet.getString("parseRegex");
                     String subTaskJson = resultSet.getString("subTaskJson");
                     boolean useProxy = resultSet.getBoolean("useProxy");
+                    String contentType = resultSet.getString("contentType");
+
 
                     Task task = new Task();
                     task.setName(taskName);
@@ -114,6 +132,19 @@ public class DBService {
                     task.setSubTaskJson(subTaskJson);
                     task.setUseProxy(useProxy);
                     task.setTaskStatus(TaskStatus.Doing);
+                    if (!StringUtils.isEmpty(contentType)) {
+                        switch (contentType) {
+                            case "GB2312":
+                                task.setContentType(ContentType.GBK);
+                                break;
+                            case "GBK":
+                                task.setContentType(ContentType.GBK);
+                                break;
+                            default:
+                                task.setContentType(ContentType.UTF_8);
+                                break;
+                        }
+                    }
                     tasks.add(task);
                 }
             }
@@ -138,7 +169,7 @@ public class DBService {
 
 
     public static void insertTasks(Connection connection, List<Task> tasks) throws SQLException {
-        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson, taskStatus, useProxy) VALUES(?,?,?,?,?,?,?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson, taskStatus, useProxy, contentType) VALUES(?,?,?,?,?,?,?, ?, ?, ?, ?, ?, ?)";
         try {
             connection.setAutoCommit(false);
             PreparedStatement psmt = connection.prepareStatement(sql);
@@ -155,6 +186,7 @@ public class DBService {
                 psmt.setString(10, task.getSubTaskJson());
                 psmt.setInt(11, task.getTaskStatus().getValue());
                 psmt.setBoolean(12, task.isUseProxy());
+                psmt.setString(13, task.getContentType().name());
                 psmt.addBatch();
             }
             psmt.executeBatch();
@@ -170,7 +202,7 @@ public class DBService {
 
 
     public static void insertTask(Connection connection, Task task) throws SQLException {
-        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson, taskStatus, useProxy) VALUES(?,?,?,?,?,?,?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks(name, url, cookies, headers, parameters, refer, type, recursive, parseRegex, subTaskJson, taskStatus, useProxy, contentType) VALUES(?,?,?,?,?,?,?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement psmt = connection.prepareStatement(sql)) {
             psmt.setString(1, task.getName());
             psmt.setString(2, task.getUrl());
@@ -184,6 +216,7 @@ public class DBService {
             psmt.setString(10, task.getSubTaskJson());
             psmt.setInt(11, task.getTaskStatus().getValue());
             psmt.setBoolean(12, task.isUseProxy());
+            psmt.setString(13, task.getContentType().name());
             psmt.executeUpdate();
         }
     }

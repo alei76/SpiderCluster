@@ -2,8 +2,6 @@ import com.omartech.spiderServer.handler.RequestHandler;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-import java.text.DecimalFormat;
-
 /**
  * Created by OmarTech on 15-10-17.
  */

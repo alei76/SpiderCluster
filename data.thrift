@@ -14,6 +14,13 @@ enum TaskStatus{
   Error = 2,
 }
 
+enum ContentType{
+  UTF_8 = 1,
+  GBK = 2,
+  GB2312 = 3,
+  
+}
+
 
 struct Task{//具体抓取任务
   1: i64 id,
@@ -30,6 +37,7 @@ struct Task{//具体抓取任务
   13: string subTaskJson,//子任务
   14: string workerIp,//worker ip
   15: TaskStatus taskStatus,//task status
+  16: ContentType contentType,//任务页面编码
 }
 struct SubTask{//都不是必填
   1: string headerJson,
