@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.omartech.proxy.proxy_client.ProxyClient;
 import com.omartech.spider.gen.*;
-import com.omartech.utils.spider.DefetcherUtils;
-import com.omartech.utils.spider.URLRefiner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;

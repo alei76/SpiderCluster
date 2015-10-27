@@ -35,6 +35,10 @@ public class SpiderClient {
     @Option(name = "-t", usage = "-t set the time span of loop, default = 5 min")
     private int timeSpan = 5;
 
+    @Option(name = "-nd", usage = "-nd debug model, mv files to /test-spider-client/")
+    private boolean notDelete = false;
+
+
     public static void main(String[] args) {
         new SpiderClient().domain(args);
     }
@@ -50,6 +54,7 @@ public class SpiderClient {
             logger.info("server : {}", server);
             logger.info("savefolder : {}", localstore);
             logger.info("timeSpan : {}min", timeSpan);
+            logger.info("debug : {}", notDelete);
             logger.info("=============================");
             File folder = new File(localstore);
             if (folder.exists()) {
@@ -138,6 +143,17 @@ public class SpiderClient {
                     boolean status = taskMonitor.sendResults(taskResults);
                     if (status) {
                         logger.info("数据发送完毕, 删掉文件");
+                        if (notDelete) {
+                            File testFolder = new File("test-spider-client");
+                            if (!testFolder.exists()) {
+                                testFolder.mkdir();
+                            }
+                            try {
+                                FileUtils.copyFileToDirectory(tmp, testFolder);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
                         FileUtils.deleteQuietly(tmp);
                         failed = false;
                     } else {

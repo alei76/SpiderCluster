@@ -38,12 +38,13 @@ CREATE TABLE `tasks` (
   `workerIp` varchar(50) DEFAULT NULL,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `useProxy` tinyint(1) DEFAULT NULL,
+  `contentType` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `url` (`url`(233)),
   KEY `name` (`name`),
   KEY `workerIp` (`workerIp`),
   KEY `taskStatus` (`taskStatus`)
-) ENGINE=InnoDB AUTO_INCREMENT=8862 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9513 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -55,4 +56,4 @@ CREATE TABLE `tasks` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-10-26 17:06:06
+-- Dump completed on 2015-10-27 16:57:44
