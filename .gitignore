@@ -1,4 +1,5 @@
 *.jar
+error_tasks
 .idea/
 *.iml
 .project
@@ -11,3 +12,4 @@ __spider-client__task
 localstore/
 docker/server/spidercluster.sql
 .DS_Store
+test-spider-client/

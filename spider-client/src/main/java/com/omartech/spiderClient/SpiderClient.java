@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by OmarTech on 15-3-14.
@@ -144,12 +145,15 @@ public class SpiderClient {
                     if (status) {
                         logger.info("数据发送完毕, 删掉文件");
                         if (notDelete) {
-                            File testFolder = new File("test-spider-client");
+                            String tmpPath = "test-spider-client";
+                            File testFolder = new File(tmpPath);
                             if (!testFolder.exists()) {
                                 testFolder.mkdir();
                             }
+                            String name = tmp.getName()+"-"+new Random().nextInt();
+                            File newFile = new File(tmpPath+File.separator+name);
                             try {
-                                FileUtils.copyFileToDirectory(tmp, testFolder);
+                                FileUtils.copyFile(tmp, newFile);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

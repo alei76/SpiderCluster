@@ -158,14 +158,14 @@ public class SpiderWorker {
             String taskName = object.getTaskName();
             String json = gson.toJson(object);
             try {
-                FileUtils.write(new File(localstore + File.separator + taskName), json + "\n", true);
+                FileUtils.write(new File(localstore + File.separator + taskName), json + "\n", "UTF-8", true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         for (long taskId : errors) {
             try {
-                FileUtils.write(new File(localstore + File.separator + "error_tasks"), taskId + "\n", true);
+                FileUtils.write(new File(localstore + File.separator + "error_tasks"), taskId + "\n","UTF-8", true);
             } catch (IOException e) {
                 e.printStackTrace();
             }

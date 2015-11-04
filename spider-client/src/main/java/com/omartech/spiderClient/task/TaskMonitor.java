@@ -12,11 +12,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
  * Created by OmarTech on 15-3-14.
@@ -48,6 +50,7 @@ public class TaskMonitor {
 
         HttpEntity reqEntity = MultipartEntityBuilder.create()
                 .addPart("file", file)
+                .setCharset(Charset.forName("UTF-8"))
                 .build();
 
         post.setEntity(reqEntity);
