@@ -26,10 +26,10 @@ public abstract class ABatchParser {
     static Logger logger = LoggerFactory.getLogger(ABatchParser.class);
 
     @Option(name = "-d", usage = "-d set the default dir")
-    private String folder = "spider-server-store";
+    protected String folder = "spider-server-store";
 
     @Option(name = "-c", usage = "-c set how many thread to work")
-    private int cpu = Runtime.getRuntime().availableProcessors();
+    protected int cpu = Runtime.getRuntime().availableProcessors();
 
     public void domain(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
@@ -118,6 +118,5 @@ public abstract class ABatchParser {
         }
         return object;
     }
-
 
 }

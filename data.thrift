@@ -36,7 +36,7 @@ struct Task{//具体抓取任务
   12: bool recursive = false,//如果是true，则继续抓取parseRegex中的链接
   13: string subTaskJson,//子任务
   14: string workerIp,//worker ip
-  15: TaskStatus taskStatus,//task status
+  15: TaskStatus taskStatus = TaskStatus.UnDo,//task status
   16: ContentType contentType,//任务页面编码
 }
 struct SubTask{//都不是必填

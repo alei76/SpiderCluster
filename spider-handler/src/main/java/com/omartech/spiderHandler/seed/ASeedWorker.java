@@ -2,6 +2,7 @@ package com.omartech.spiderHandler.seed;
 
 import com.google.gson.Gson;
 import com.omartech.spider.gen.Task;
+import com.omartech.spider.gen.TaskStatus;
 import com.omartech.spiderServer.DBService;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.kohsuke.args4j.CmdLineException;
@@ -25,16 +26,16 @@ import java.util.concurrent.TimeUnit;
 public abstract class ASeedWorker {
 
     @Option(name = "-dbp", usage = "-dbp set the database ip and port, like 127.0.0.1:3306")
-    String dbIpAndPort = "10.1.0.171:3311";
+    protected String dbIpAndPort = "10.1.0.171:3311";
     @Option(name = "-u", usage = "-u set the database username")
-    String username = "root";
+    protected String username = "root";
     @Option(name = "-pw", usage = "-pw set the database password")
-    String password = "spiderserver";
+    protected String password = "spiderserver";
     @Option(name = "-once", usage = "-once is force insert the once task again, default is false")
-    boolean forceOnce = false;
+    protected boolean forceOnce = false;
 
     @Option(name = "-help", usage = "-help ")
-    boolean help = false;
+    protected boolean help = false;
 
     private static Logger logger = LoggerFactory.getLogger(ASeedWorker.class);
 
@@ -121,9 +122,11 @@ public abstract class ASeedWorker {
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
         for (SeedTask bigTask : tasks) {
+
             if (bigTask instanceof SchedulateTask) {
                 SchedulateTask schedulateTask = (SchedulateTask) bigTask;
-                service.scheduleAtFixedRate(new SeedRunner(schedulateTask.task, dataSource), 1, schedulateTask.timespan, schedulateTask.timeUnit);
+                SeedRunner seedRunner = new SeedRunner(schedulateTask.task, dataSource);
+                service.scheduleAtFixedRate(seedRunner, 1, schedulateTask.timespan, schedulateTask.timeUnit);
             } else if (bigTask instanceof OnceTask) {
                 if (forceOnce) {
                     OnceTask onceTask = (OnceTask) bigTask;
@@ -145,13 +148,16 @@ public abstract class ASeedWorker {
 
         @Override
         public void run() {
-            try (Connection connection = dataSource.getConnection();) {
+            logger.info("insert task : {}", task);
+            try (Connection connection = dataSource.getConnection()) {
                 DBService.insertTask(connection, task);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+
     }
+
 
     public interface SeedTask {
 
@@ -160,8 +166,9 @@ public abstract class ASeedWorker {
     public class OnceTask implements SeedTask {
         Task task;
 
-        public OnceTask(Task tas) {
-            this.task = tas;
+        public OnceTask(Task task) {
+            checkTask(task);
+            this.task = task;
         }
     }
 
@@ -171,10 +178,28 @@ public abstract class ASeedWorker {
         TimeUnit timeUnit;
 
         public SchedulateTask(Task task, int timespan, TimeUnit timeUnit) {
+            checkTask(task);
             this.task = task;
             this.timespan = timespan;
             this.timeUnit = timeUnit;
         }
+
+        @Override
+        public String toString() {
+            return "SchedulateTask{" +
+                    "task=" + task +
+                    ", timespan=" + timespan +
+                    ", timeUnit=" + timeUnit +
+                    '}';
+        }
     }
 
+    public static boolean checkTask(Task task) {
+        TaskStatus taskStatus = task.getTaskStatus();
+        boolean flag = true;
+        if (taskStatus == null) {
+            logger.error("taskStatus is null");
+        }
+        return flag;
+    }
 }
