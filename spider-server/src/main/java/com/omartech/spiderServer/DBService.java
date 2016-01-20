@@ -186,7 +186,12 @@ public class DBService {
                 psmt.setString(10, task.getSubTaskJson());
                 psmt.setInt(11, task.getTaskStatus().getValue());
                 psmt.setBoolean(12, task.isUseProxy());
-                psmt.setString(13, task.getContentType().name());
+                ContentType contentType = task.getContentType();
+                String contentTypeStr = "";
+                if (contentType != null) {
+                    contentTypeStr = contentType.name();
+                }
+                psmt.setString(13, contentTypeStr);
                 psmt.addBatch();
             }
             psmt.executeBatch();
@@ -216,8 +221,13 @@ public class DBService {
             psmt.setString(10, task.getSubTaskJson());
             psmt.setInt(11, task.getTaskStatus().getValue());
             psmt.setBoolean(12, task.isUseProxy());
-            psmt.setString(13, task.getContentType().name());
-            psmt.executeUpdate();
+            ContentType contentType = task.getContentType();
+            String contentTypeStr = "";
+            if (contentType != null) {
+                contentTypeStr = contentType.name();
+            }
+            psmt.setString(13, contentTypeStr);
+            psmt.execute();
         }
     }
 
