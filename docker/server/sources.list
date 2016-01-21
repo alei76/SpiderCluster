@@ -1,0 +1,12 @@
+# apt source list for 163
+deb http://mirror.bit.edu.cn/ubuntu trusty main restricted multiverse universe
+deb http://mirror.bit.edu.cn/ubuntu trusty-updates main restricted multiverse universe
+deb http://mirror.bit.edu.cn/ubuntu trusty-security main restricted multiverse universe
+deb http://mirror.bit.edu.cn/ubuntu trusty-proposed main restricted multiverse universe
+deb http://mirror.bit.edu.cn/ubuntu trusty-backports main restricted multiverse universe
+deb-src http://mirror.bit.edu.cn/ubuntu trusty main restricted multiverse universe
+deb-src http://mirror.bit.edu.cn/ubuntu trusty-updates main restricted multiverse universe
+deb-src http://mirror.bit.edu.cn/ubuntu trusty-security main restricted multiverse universe
+deb-src http://mirror.bit.edu.cn/ubuntu trusty-proposed main restricted multiverse universe
+deb-src http://mirror.bit.edu.cn/ubuntu trusty-backports main restricted multiverse universe
+

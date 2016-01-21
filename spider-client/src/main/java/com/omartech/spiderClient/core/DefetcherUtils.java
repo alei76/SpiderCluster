@@ -1,18 +1,5 @@
 package com.omartech.spiderClient.core;
 
-import static java.lang.Math.min;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Random;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -20,8 +7,15 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.Map;
+
 /**
- * User: feng
  * Date: 2/23/14
  * Time: 9:53 AM
  */
@@ -37,9 +31,6 @@ public class DefetcherUtils {
 
     public static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36";
     private static Logger logger = LoggerFactory.getLogger(DefetcherUtils.class);
-
-    //    private static final HttpHost[] proxies;
-    private static Random rnd = new Random();
 
     public static final String CHARSET = "charset=";
     public static final Charset ASCII = Charset.forName("US-ASCII");
@@ -68,7 +59,7 @@ public class DefetcherUtils {
         return s;
     }
 
-    private static Charset guess(String html, String patten) {
+    public static Charset guess(String html, String patten) {
         int idx = html.indexOf(patten);
         if (idx != -1) {
             int start = idx + patten.length();
@@ -98,7 +89,7 @@ public class DefetcherUtils {
         String s = new String(body, 0, body.length, ASCII);//
         Charset c = guess(s, CHARSET);
         Charset charset = c == null ? UTF_8 : c;
-        System.out.println(c + " -- " + charset);
+        logger.info("guess result: {}, charset : {}", c, charset);
         return charset;
     }
 
@@ -149,22 +140,9 @@ public class DefetcherUtils {
     }
 
 
-    public static int rsleep(long maxtime) {
-        try {
-            int t = rnd.nextInt((int) maxtime);
-            Thread.sleep(t);
-            return t;
-        } catch (InterruptedException ignore) {
-        }
-
-        return 0;
-    }
-
-
     private static boolean isWhitespace(char c) {
         return Character.isWhitespace(c) || c == 160; // &nbsp;
     }
-
 
     public static String getLocation(HttpResponse resp) {
         Header location = resp.getFirstHeader("Location");

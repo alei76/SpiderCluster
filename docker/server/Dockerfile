@@ -1,5 +1,5 @@
-#FROM ubuntu/14.04.1
-FROM omartech/ubuntu-163-jdk8
+FROM ubuntu:14.04
+#FROM omartech/ubuntu-163-jdk8
 
 MAINTAINER Sonyfe25cp "sonyfe25cp@gmail.com"
 
@@ -7,11 +7,16 @@ ENV DBP 127.0.0.1:3306
 ENV DBU root
 ENV DBPW 123123
 
+#replace sources.list
+
+ADD sources.list /etc/apt/sources.list
+
 #install mysql
 RUN apt-get update && \
     apt-get install -y  mysql-server-5.6 \
-        		mysql-client-5.6 \
-			supervisor
+        		            mysql-client-5.6 \
+			                  supervisor
+
 RUN mkdir /spiderstore
 VOLUME ["/spiderstore"]
 #switch dir
@@ -31,7 +36,7 @@ RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisord.conf
 
 ##copy jar to docker
-ADD spider-server-2.1-SNAPSHOT-jar-with-dependencies.jar /spiderserver/
+ADD spider-server-2.3-SNAPSHOT-jar-with-dependencies.jar /spiderserver/
 ADD run.sh /spiderserver/
 #
 #

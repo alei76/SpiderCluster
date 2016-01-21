@@ -1,11 +1,11 @@
-#import ubuntu/14.04.1
-FROM omartech/ubuntu-163-jdk8
+FROM ubuntu:14.04
+#FROM omartech/ubuntu-163-jdk8
 
 RUN mkdir /spider-client
 
 WORKDIR /spider-client
 
-ADD spider-client-2.1-SNAPSHOT-jar-with-dependencies.jar /spider-client/
+ADD spider-client-2.3-SNAPSHOT-jar-with-dependencies.jar /spider-client/
 
 ADD run.sh /spider-client/
 
