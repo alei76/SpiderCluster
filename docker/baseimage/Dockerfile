@@ -19,3 +19,5 @@ RUN apt-get update -y 					&& \
     apt-get install oracle-java8-installer -y 		&& \
     rm -rf /var/lib/apt/lists/*
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+
+#docker build -t omartech/ubuntu-163-jdk8 .
