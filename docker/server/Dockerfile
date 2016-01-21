@@ -1,5 +1,5 @@
-FROM ubuntu:14.04
-#FROM omartech/ubuntu-163-jdk8
+#FROM ubuntu:14.04
+FROM omartech/ubuntu-163-jdk8
 
 MAINTAINER Sonyfe25cp "sonyfe25cp@gmail.com"
 
