@@ -15,7 +15,6 @@
 
 
     <dependencies>
-
         <dependency>
             <groupId>com.omartech</groupId>
             <artifactId>proxy-client</artifactId>
