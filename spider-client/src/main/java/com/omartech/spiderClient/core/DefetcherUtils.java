@@ -1,10 +1,8 @@
 package com.omartech.spiderClient.core;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +14,6 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Date: 2/23/14
@@ -68,8 +64,8 @@ public class DefetcherUtils {
         if (idx != -1) {
             int start = idx + patten.length();
 
-            if(html.charAt(start) == '"' || html.charAt(start) == '\''){
-                start = start+1;
+            if (html.charAt(start) == '"' || html.charAt(start) == '\'') {
+                start = start + 1;
             }
             int end = html.indexOf('"', start);
             if (end == -1) {
