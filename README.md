@@ -132,8 +132,8 @@ docker run --env SERVER=127.0.0.1 --env PORT=7154 --env TIMESPAN=1 -d omartech/s
 
 实际效果如图：
 
-    ![任务完成图](./images/tasks.jpg)
-    ![任务状态图](./images/status.jpg)
+    ![任务完成图](https://github.com/sonyfe25cp/SpiderCluster/blob/master/images/tasks.jpg)
+    ![image](https://github.com/sonyfe25cp/SpiderCluster/blob/master/images/status.jpg)
 
 
 
