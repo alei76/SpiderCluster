@@ -38,7 +38,8 @@ public class SpiderClient {
 
     @Option(name = "-nd", usage = "-nd debug model, mv files to /test-spider-client/")
     private boolean notDelete = false;
-
+    @Option(name = "-help", usage = "show the help")
+    protected boolean help = false;
 
     public static void main(String[] args) {
         new SpiderClient().domain(args);
@@ -49,6 +50,13 @@ public class SpiderClient {
         parser.setUsageWidth(120);
         try {
             parser.parseArgument(args);
+
+            if (this.help) {
+                System.err.println("java {{cp}} " + this.getClass().getCanonicalName() + " [options...] arguments...");
+                parser.printUsage(System.err);
+                System.exit(1);
+            }
+
             logger.info("=============================");
             logger.info("client runs with args blow:");
             logger.info("port : {}", port);

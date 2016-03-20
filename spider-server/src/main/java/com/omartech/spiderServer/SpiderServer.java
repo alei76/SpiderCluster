@@ -31,13 +31,25 @@ public class SpiderServer {
     @Option(name = "-rbs", usage = "-rbs set the request batch size")
     int requestBatchSize = 100;
 
+    @Option(name = "-help", usage = "show the help")
+    protected boolean help = false;
+
     void domain(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
         try {
             parser.parseArgument(args);
+
+            if (this.help) {
+                System.err.println("java {{cp}} " + this.getClass().getCanonicalName() + " [options...] arguments...");
+                parser.printUsage(System.err);
+                System.exit(1);
+            }
+
         } catch (CmdLineException e) {
             e.printStackTrace();
         }
+
+
         parser.setUsageWidth(80);
         logger.info("============================");
         logger.info("server runs with args blow:");
