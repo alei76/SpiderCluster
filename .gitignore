@@ -1,4 +1,5 @@
 *.jar
+spider-deploy/
 *.tar.gz
 error_tasks
 .idea/
