@@ -50,6 +50,10 @@ proxy-client
 
     简单的代理客户端，便于获取http代理
 
+###Run without docker
+
+./deploy.sh
+
 ###Dockerfile相关说明
 路径：docker/client，docker/server
 
